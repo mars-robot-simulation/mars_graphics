@@ -388,7 +388,8 @@ namespace mars
             tempnode.offset = node->visual_offset_pos;
             tempnode.r_off = node->visual_offset_rot;
 
-            GuiHelper::freeMeshMemory(node->mesh);
+            constexpr bool free_memory = true;
+            node->mesh.setZero(free_memory);
             node->mesh = GuiHelper::convertOsgNodeToSnMesh(tempnode.node.get(),
                                                            scaleX, scaleY, scaleZ,
                                                            node->pivot.x(),
@@ -761,32 +762,5 @@ namespace mars
 
             return newImageFile.image;
         }
-
-        void GuiHelper::freeMeshMemory(mars::interfaces::snmesh& mesh)
-        {
-            if (mesh.vertices)
-            {
-                delete mesh.vertices;
-            }
-            if (mesh.normals)
-            {
-                delete mesh.normals;
-            }
-            if (mesh.color)
-            {
-                delete mesh.color;
-            }
-            if (mesh.tCoords)
-            {
-                delete mesh.tCoords;
-            }
-            if (mesh.indices)
-            {
-                delete mesh.indices;
-            }
-
-            mesh.setZero();
-        }
-
     } // end of namespace graphics
 } // end of namespace mars
