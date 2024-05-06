@@ -109,6 +109,7 @@ namespace mars
             static osg::ref_ptr<osg::Texture2D> loadTexture(std::string filename);
             static osg::ref_ptr<osg::Image> loadImage(std::string filename);
 
+            static void freeMeshMemory(mars::interfaces::snmesh& mesh);
         private:
             osg::Geometry *my_geo;
             osg::ref_ptr<osg::Vec3Array> my_v3;
