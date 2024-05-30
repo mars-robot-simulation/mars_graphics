@@ -13,7 +13,7 @@ else(${USE_TR1})
     ADD_DEFINITIONS(-DNO_TR1)
 endif()
 
-find_package(lib_manager)
+find_package(lib_manager REQUIRED)
 lib_defaults()
 define_module_info()
 
@@ -39,47 +39,38 @@ if(USE_VERTEX_BUFFER)
     ADD_DEFINITIONS(-DUSE_VERTEX_BUFFER)
 endif()
 
-pkg_check_modules(OSGQT openscenegraph-osgQt5)
+set(DEPENDENCIES
+    lib_manager
+    mars_interfaces
+    cfg_manager
+    data_broker
+    configmaps
+    mars_utils
+    osg_material_manager
+    osg_terrain
+    osg_lines
+    osg_frames
+    openscenegraph-osgManipulator
+    openscenegraph-osgViewer
+    openscenegraph-osgFX
+    openscenegraph-osgShadow
+    openscenegraph-osgParticle
+    openscenegraph-osgTerrain
+    openscenegraph-osgDB
+    openscenegraph-osgGA
+    openscenegraph-osgWidget
+    openscenegraph-osgText
+    openscenegraph-osgUtil
+)
+
+pkg_check_modules(OSGQT openscenegraph-osgQt)
 if(OSGQT_FOUND)
-find_package(OpenSceneGraph REQUIRED osgManipulator osgViewer osgFX osgShadow osgParticle osgTerrain osgDB osgGA osgWidget osgText osgUtil)
-
-include_directories(${OSGQT_INCLUDE_DIRS})
-link_directories(${OSGQT_LIBRARY_DIRS})
-add_definitions(${OSGQT_CFLAGS_OTHER})  #cflags without -I
-
-else()
-find_package(OpenSceneGraph REQUIRED osgManipulator osgViewer osgFX osgShadow osgParticle osgTerrain osgDB osgGA osgWidget osgText osgUtil osgQt)
+    list(APPEND DEPENDENCIES openscenegraph-osgQt)
 endif()
-
-include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
-link_directories(${OPENSCENEGRAPH_LIBRARY_DIRS})
-
-
-set (CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${OPENSCENEGRAPH_INCLUDE_DIRS})
-CHECK_INCLUDE_FILE_CXX("osg/Version" HAVE_OSG_VERSION_H)
-if(${HAVE_OSG_VERSION_H})
-    ADD_DEFINITIONS(-DHAVE_OSG_VERSION_H)
-endif()
+pkg_check_modules(Dependencies REQUIRED IMPORTED_TARGET ${DEPENDENCIES})
 
 set (QT_USE_QTOPENGL TRUE)
 setup_qt()
-
-pkg_check_modules(PKGCONFIG REQUIRED
-                  lib_manager
-                  mars_interfaces
-                  cfg_manager
-                  data_broker
-                  configmaps
-                  mars_utils
-                  osg_material_manager
-                  osg_terrain
-                  osg_lines
-                  osg_frames
-)
-
-include_directories(${PKGCONFIG_INCLUDE_DIRS})
-link_directories(${PKGCONFIG_LIBRARY_DIRS})
-add_definitions(${PKGCONFIG_CFLAGS_OTHER})  #cflags without -I
 
 set(HEADERS
            src/GraphicsCamera.h
@@ -205,22 +196,15 @@ if(WIN32)
   else(USE_VERTEX_BUFFER)
     SET(WIN_LIBS opengl32)
   endif(USE_VERTEX_BUFFER)
-  SET(WIN_LIBS ${WIN_LIBS} ${OSGQT_LIBRARIES})
 endif(WIN32)
 
-if(OSGQT_FOUND)
-  SET(EXTRA_LIBS ${OSGQT_LIBRARIES})
-endif()
-
 target_link_libraries(${PROJECT_NAME}
-            ${QT_LIBRARIES}
-            ${OPENSCENEGRAPH_LIBRARIES}
-            ${PKGCONFIG_LIBRARIES}
-            ${OPENCV_LIBRARIES}
-            ${APPLE_LIBS}
-            ${WIN_LIBS}
-            ${EXTRA_LIBS}
-            pthread
+    PUBLIC
+        PkgConfig::Dependencies
+        ${APPLE_LIBS}
+        ${WIN_LIBS}
+        ${EXTRA_LIBS}
+        pthread
 )
 
 if(WIN32)
@@ -246,6 +230,7 @@ install(FILES ${HEADERS_WRAPPER} DESTINATION include/${PROJECT_NAME}/wrapper)
 
 # Prepare and install necessary files to support finding of the library
 # using pkg-config
+list(JOIN DEPENDENCIES " " PKGCONFIG_REQUIRES)
 configure_file(configuration/${PROJECT_NAME}.pc.in ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc DESTINATION lib/pkgconfig)
 
