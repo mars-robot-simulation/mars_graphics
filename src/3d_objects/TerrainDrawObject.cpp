@@ -1,8 +1,4 @@
-#ifdef HAVE_OSG_VERSION_H
 #include <osg/Version>
-#else
-#include <osg/Export>
-#endif
 
 #ifdef USE_VERTEX_BUFFER
 #include "VertexBufferTerrain.h"

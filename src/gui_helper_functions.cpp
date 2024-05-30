@@ -1,5 +1,6 @@
 #include "gui_helper_functions.h"
 #include <iostream>
+#include <osg/Version>
 #include <osg/TriangleFunctor>
 #include <osgDB/ReadFile>
 
@@ -7,12 +8,6 @@
 #include <osg/MatrixTransform>
 #include <osg/ComputeBoundsVisitor>
 #include <osgUtil/Optimizer>
-
-#ifdef HAVE_OSG_VERSION_H
-#include <osg/Version>
-#else
-#include <osg/Export>
-#endif
 
 #include <opencv2/opencv.hpp>
 

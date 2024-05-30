@@ -15,12 +15,7 @@
 #include <osg/CullFace>
 #include <osg/io_utils>
 #include <osg/AlphaFunc>
-
-#ifdef HAVE_OSG_VERSION_H
 #include <osg/Version>
-#else
-#include <osg/Export>
-#endif
 
 #include <osgDB/WriteFile>
 
