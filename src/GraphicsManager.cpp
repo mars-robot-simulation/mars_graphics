@@ -44,7 +44,7 @@
 #define NUM_PSSM_SPLITS 3
 
 using namespace osg_material_manager;
-
+using namespace configmaps;
 namespace mars
 {
     namespace graphics
