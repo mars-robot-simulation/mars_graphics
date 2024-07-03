@@ -468,6 +468,7 @@ namespace mars
             {
                 removeDrawObject(iter->first);
             }
+            DrawCoreIds.clear();
             clearDrawItems();
         }
 
