@@ -6,11 +6,7 @@
                               //glDeleteBuffers
 #endif
 
-#ifdef HAVE_OSG_VERSION_H
 #include <osg/Version>
-#else
-#include <osg/Export>
-#endif
 
 #include "VertexBufferTerrain.h"
 
