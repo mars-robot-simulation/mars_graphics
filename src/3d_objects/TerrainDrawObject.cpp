@@ -35,7 +35,7 @@ namespace mars
             info.srcname = ts->srcname;
             info.texScaleX = ts->texScaleX;
             info.texScaleY = ts->texScaleY;
-            height_data = NULL;
+            height_data = nullptr;
             this->gridFile = gridFile;
 
 #ifdef USE_VERTEX_BUFFER

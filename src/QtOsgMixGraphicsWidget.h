@@ -22,7 +22,7 @@ namespace mars
                                    unsigned long id, bool rtt_widget = 0,
                                    GraphicsManager *gm = 0)
                 : QWidget((QWidget*) parent),
-                  GraphicsWidget(parent, scene, id, rtt_widget, gm), childWidget(NULL) {}
+                  GraphicsWidget(parent, scene, id, rtt_widget, gm), childWidget(nullptr) {}
             // Prevent flicker on Windows Qt
             QPaintEngine* paintEngine () const { return 0; }
 

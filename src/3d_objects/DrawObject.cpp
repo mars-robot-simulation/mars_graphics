@@ -53,7 +53,7 @@ namespace mars
               showSelected(true),
               isHidden(true),
               brightness(1.0),
-              frame(NULL)
+              frame(nullptr)
         {
         }
 

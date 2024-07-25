@@ -43,7 +43,7 @@ namespace mars
 
         GeodeVisitor::GeodeVisitor(const std::string name):osg::NodeVisitor(TRAVERSE_ALL_CHILDREN)
         {
-            resultNode=NULL;
+            resultNode=nullptr;
             this->name=name;
         }
 
@@ -121,7 +121,7 @@ namespace mars
           }
 
           bool GuiHelper::validateGraphicsWidget(void){
-          return ( this->gw != NULL && this->gw != 0 );
+          return ( this->gw != nullptr && this->gw != 0 );
           }
         */
 
@@ -157,7 +157,7 @@ namespace mars
             GeodeVisitor visitor("PLACEHOLDER");
             osg::Geode* geode;
             osg::Node* tmpNode;
-            osg::ref_ptr<osg::Group> osgGroupFromRead = NULL;
+            osg::ref_ptr<osg::Group> osgGroupFromRead = nullptr;
             if ((osgGroupFromRead = node->asGroup()) == 0)
             {
                 fprintf(stderr, "error\n");

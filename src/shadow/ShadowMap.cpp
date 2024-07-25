@@ -39,7 +39,7 @@ namespace mars
         ShadowMap::ShadowMap()
         {
             shadowTextureUnit = 2;
-            centerObject = NULL;
+            centerObject = nullptr;
             radius = 1.0;
             shadowTextureSize = 2048;
             // create own uniforms
@@ -128,7 +128,7 @@ namespace mars
 
         void ShadowMap::removeState(osg::StateSet* state)
         {
-            state->setTextureAttributeAndModes(shadowTextureUnit,NULL,
+            state->setTextureAttributeAndModes(shadowTextureUnit,nullptr,
                                                osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
             // add the uniform list to the stateset
             for(std::vector< osg::ref_ptr<osg::Uniform> >::const_iterator itr=uniformList.begin();

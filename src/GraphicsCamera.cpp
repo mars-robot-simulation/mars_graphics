@@ -334,7 +334,7 @@ namespace mars
               myTitle.append("]");
               }
               //set window title for main window
-              if (myParent != NULL){
+              if (myParent != nullptr){
               //myParent->setWindowTitle(myTitle);
               }
               //else setWindowTitle(myTitle);

@@ -46,12 +46,12 @@ namespace mars
               point_size(1.0)
         {
             scaleTransform->setMatrix(osg::Matrix::scale(1.0, 1.0, 1.0));
-            if(parent.get() != NULL) parent->addChild(scaleTransform);
+            if(parent.get() != nullptr) parent->addChild(scaleTransform);
         }
 
         HUDLines::HUDLines()
             : HUDElement(),
-              parent(NULL),
+              parent(nullptr),
               scaleTransform(new osg::MatrixTransform),
               cull_mask(0xffffffff),
               render_order(10),
@@ -277,7 +277,7 @@ namespace mars
 
         osg::Group* HUDLines::getNode(void)
         {
-            if(parent.get() == NULL)
+            if(parent.get() == nullptr)
                 return scaleTransform.get();
             else
                 return parent.get();

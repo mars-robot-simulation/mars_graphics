@@ -44,7 +44,7 @@ namespace mars
     {
 
         maxNumSubTiles = 100;
-        heightData = NULL;
+        heightData = nullptr;
         numSubTiles = 0;
         prepare();
 
@@ -62,7 +62,7 @@ namespace mars
     {
         clear();
         delete[] vboIds;
-        vboIds = NULL;
+        vboIds = nullptr;
     }
 
     void MultiResHeightMapRenderer::initialize()
@@ -130,26 +130,26 @@ namespace mars
         if(isInitialized)
         {
             free (vertices);
-            vertices = NULL;
+            vertices = nullptr;
             free (indices);
-            indices = NULL;
+            indices = nullptr;
             glBindBuffer(GL_ARRAY_BUFFER, vboIds[0]);
-            glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[1]);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
             glDeleteBuffers(2, vboIds);
         }
 
         if(highIsInitialized)
         {
             free (highVertices);
-            highVertices = NULL;
+            highVertices = nullptr;
             free (highIndices);
-            highIndices = NULL;
+            highIndices = nullptr;
             glBindBuffer(GL_ARRAY_BUFFER, vboIds[2]);
-            glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[3]);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
             glDeleteBuffers(2, vboIds+2);
         }
 
@@ -180,7 +180,7 @@ namespace mars
                 delete[] heightData[i];
             }
             delete[] heightData;
-            heightData = NULL;
+            heightData = nullptr;
         }
     }
 

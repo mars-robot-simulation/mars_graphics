@@ -26,14 +26,14 @@ namespace mars
         using mars::utils::Color;
 
         OSGDrawItem::OSGDrawItem(GraphicsWidget *gw)
-            : osg::Group(), gw_(gw), texture_(NULL)
+            : osg::Group(), gw_(gw), texture_(nullptr)
         {
 
         }
 
         OSGDrawItem::OSGDrawItem(GraphicsWidget *gw, const draw_item &di,
                                  std::string fontPath)
-            : osg::Group(), type_(di.type), gw_(gw), texture_(NULL)
+            : osg::Group(), type_(di.type), gw_(gw), texture_(nullptr)
         {
 
             osg::StateSet *states = getOrCreateStateSet();
@@ -362,13 +362,13 @@ namespace mars
                                            vector<float> vertices, Color myColor)
         {
             osg::Node* node = di->asGroup()->getChild(0);
-            if(node == NULL) return;
+            if(node == nullptr) return;
             osg::Geode* geode = dynamic_cast<osg::Geode*>(node);
-            if(geode == NULL) return;
+            if(geode == nullptr) return;
             osg::Drawable* drawable = geode->getDrawable(0);
-            if(drawable == NULL) return;
+            if(drawable == nullptr) return;
             osg::Geometry* geometry = drawable->asGeometry();
-            if(geometry == NULL) return;
+            if(geometry == nullptr) return;
 
             osg::Array* v;
             osg::Vec3Array* v2;
@@ -401,13 +401,13 @@ namespace mars
         void OSGDrawItem::updateTriangleSet(OSGDrawItem *di, vector<float> vertices)
         {
             osg::Node* node = di->asGroup()->getChild(0);
-            if(node == NULL) return;
+            if(node == nullptr) return;
             osg::Geode* geode = dynamic_cast<osg::Geode*>(node);
-            if(geode == NULL) return;
+            if(geode == nullptr) return;
             osg::Drawable* drawable = geode->getDrawable(0);
-            if(drawable == NULL) return;
+            if(drawable == nullptr) return;
             osg::Geometry* geometry = drawable->asGeometry();
-            if(geometry == NULL) return;
+            if(geometry == nullptr) return;
 
             osg::ref_ptr<osg::Vec3Array> v(new osg::Vec3Array());
             for(unsigned int i=0; i<vertices.size()/3; i++)
@@ -616,13 +616,13 @@ namespace mars
             (void)myColor;
 
             osg::Node* node = di->asGroup()->getChild(0);
-            if(node == NULL) return;
+            if(node == nullptr) return;
             osg::Geode* geode = dynamic_cast<osg::Geode*>(node);
-            if(geode == NULL) return;
+            if(geode == nullptr) return;
             osg::Drawable* drawable = geode->getDrawable(0);
-            if(drawable == NULL) return;
+            if(drawable == nullptr) return;
             osg::Geometry* geometry = drawable->asGeometry();
-            if(geometry == NULL) return;
+            if(geometry == nullptr) return;
 
             osg::ref_ptr<osg::Camera> curCam = di->gw()->getMainCamera();
             osg::Vec3d eye, up, center;
@@ -788,13 +788,13 @@ namespace mars
         void OSGDrawItem::updatePoints(OSGDrawItem *di, vector<float> vertices)
         {
             osg::Node* node = di->asGroup()->getChild(0);
-            if(node == NULL) return;
+            if(node == nullptr) return;
             osg::Geode* geode = dynamic_cast<osg::Geode*>(node);
-            if(geode == NULL) return;
+            if(geode == nullptr) return;
             osg::Drawable* drawable = geode->getDrawable(0);
-            if(drawable == NULL) return;
+            if(drawable == nullptr) return;
             osg::Geometry* geometry = drawable->asGeometry();
-            if(geometry == NULL) return;
+            if(geometry == nullptr) return;
 
             osg::ref_ptr<osg::Vec3Array> v(new osg::Vec3Array());
             for(unsigned int i=0; i<vertices.size()/3; i++)

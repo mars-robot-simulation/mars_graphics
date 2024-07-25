@@ -70,9 +70,9 @@ namespace mars
             _isSetMaxFarDistance(false),
             _split_min_near_dist(ZNEAR_MIN_FROM_LIGHT_SOURCE),
             _move_vcam_behind_rcam_factor(MOVE_VIRTUAL_CAMERA_BEHIND_REAL_CAMERA_FACTOR),
-            _userLight(NULL),
+            _userLight(nullptr),
             _GLSL_shadow_filtered(false),
-            _ambientBiasUniform(NULL),
+            _ambientBiasUniform(nullptr),
             _ambientBias(0.1f,0.3f),
             isInit(false),
             haveLines(true)
@@ -105,7 +105,7 @@ namespace mars
             _userLight(copy._userLight),
             _GLSL_shadow_filtered(copy._GLSL_shadow_filtered),
             _SplitCalcMode(copy._SplitCalcMode),
-            _ambientBiasUniform(NULL),
+            _ambientBiasUniform(nullptr),
             _ambientBias(copy._ambientBias),
             isInit(false),
             haveLines(true)
@@ -440,7 +440,7 @@ namespace mars
             }
             for(unsigned int i=0; i<_number_of_splits; ++i)
             {
-                state->setTextureAttributeAndModes(_PSSMShadowSplitTextureMap[i]._textureUnit, NULL,
+                state->setTextureAttributeAndModes(_PSSMShadowSplitTextureMap[i]._textureUnit, nullptr,
                                                    osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
             }
 

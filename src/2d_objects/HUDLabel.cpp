@@ -54,11 +54,11 @@ namespace mars
               visible(true)
         {
             scaleTransform->setMatrix(osg::Matrix::scale(1.0, 1.0, 1.0));
-            if(parent.get() != NULL) parent->addChild(scaleTransform);
+            if(parent.get() != nullptr) parent->addChild(scaleTransform);
         }
 
         HUDLabel::HUDLabel()
-            : parent(NULL),
+            : parent(nullptr),
               scaleTransform(new osg::MatrixTransform),
               labelText(0),
               pl(0), pt(0), pr(0), pb(0),
@@ -275,7 +275,7 @@ namespace mars
 
         osg::Group* HUDLabel::getNode(void)
         {
-            if(parent.get() == NULL)
+            if(parent.get() == nullptr)
                 return scaleTransform.get();
             else
                 return parent.get();

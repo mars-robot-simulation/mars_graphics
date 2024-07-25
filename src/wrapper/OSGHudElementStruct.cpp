@@ -17,7 +17,7 @@ namespace mars
         OSGHudElementStruct::OSGHudElementStruct(const hudElementStruct &he,
                                                  const std::string &config_path,
                                                  unsigned int id, osg::Node* node)
-            : elem_(NULL)
+            : elem_(nullptr)
         {
             switch (he.type)
             {
@@ -91,7 +91,7 @@ namespace mars
 
         OSGHudElementStruct::~OSGHudElementStruct()
         {
-            if(elem_ != NULL) delete elem_;
+            if(elem_ != nullptr) delete elem_;
         }
 
         HUDElement* OSGHudElementStruct::getHUDElement()

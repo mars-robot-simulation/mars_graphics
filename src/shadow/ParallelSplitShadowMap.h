@@ -25,7 +25,7 @@ namespace mars
         class ParallelSplitShadowMap :  public osgShadow::ShadowTechnique
         {
         public:
-            ParallelSplitShadowMap(osg::Geode** debugGroup=NULL, int icountplanes=3);
+            ParallelSplitShadowMap(osg::Geode** debugGroup=nullptr, int icountplanes=3);
 
             ParallelSplitShadowMap(const ParallelSplitShadowMap& es, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY);
 

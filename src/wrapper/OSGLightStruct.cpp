@@ -20,7 +20,7 @@ namespace mars
             lightMarkerGeode->addDrawable(shape);
             return lightMarkerGeode;
 #else
-            return NULL;
+            return nullptr;
 #endif
         }
 

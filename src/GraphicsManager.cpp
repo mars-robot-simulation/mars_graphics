@@ -63,7 +63,7 @@ namespace mars
         GraphicsManager::GraphicsManager(lib_manager::LibManager *theManager,
                                          void *myQTWidget)
             : GraphicsManagerInterface(theManager),
-              osgWidget(NULL),
+              osgWidget(nullptr),
               guiHelper(new GuiHelper(this)),
               next_hud_id(1),
               next_draw_object_id(1),
@@ -74,7 +74,7 @@ namespace mars
               shadowedScene(new osgShadow::ShadowedScene),
               lightGroup(new osg::Group),
               globalStateset(new osg::StateSet),
-              grid(NULL),
+              grid(nullptr),
               show_grid(false),
               showClouds_(false),
               show_coords(true),
@@ -85,8 +85,8 @@ namespace mars
               ignore_next_resize(0),
               set_window_prop(0),
               initialized(false),
-              activeWindow(NULL),
-              materialManager(NULL)
+              activeWindow(nullptr),
+              materialManager(nullptr)
         {
             //osg::setNotifyLevel( osg::WARN );
 
@@ -115,7 +115,7 @@ namespace mars
                 // initialize the dataBroker Package
                 data_broker::DataPackage dbPackage;
                 dbPackageMapping.writePackage(&dbPackage);
-                dataBroker->pushData(groupName, dataName, dbPackage, NULL,
+                dataBroker->pushData(groupName, dataName, dbPackage, nullptr,
                                      data_broker::DATA_PACKAGE_READ_FLAG);
                 // register as producer
                 dataBroker->registerTimedProducer(this, groupName, dataName,
@@ -331,7 +331,7 @@ namespace mars
                     // todo: it shoud be fine to use setShadowTechnique here but somehow it is not working
                     if(shadowTechnique.sValue == "pssm")
                     {
-                        pssm = new ParallelSplitShadowMap(NULL,NUM_PSSM_SPLITS);
+                        pssm = new ParallelSplitShadowMap(nullptr,NUM_PSSM_SPLITS);
 
                         //pssm->enableShadowGLSLFiltering(false);
                         pssm->setTextureResolution(shadowTextureSize.iValue);
@@ -563,7 +563,7 @@ namespace mars
                         assert(draws[i].nodes.size() > j);
                         osg::Node *n = draws[i].nodes[j];
                         OSGDrawItem *diWrapper = dynamic_cast<OSGDrawItem*>(n->asGroup()); // TODO: asGroup unneeded?
-                        assert(diWrapper != NULL); // TODO: handle this case better
+                        assert(diWrapper != nullptr); // TODO: handle this case better
 
                         diWrapper->update(di);
 
@@ -708,7 +708,7 @@ namespace mars
 
             GraphicsWidget* gw=getGraphicsWindow(id);
 
-            if(gw == NULL)
+            if(gw == nullptr)
             {
                 return gw;
             }
@@ -720,7 +720,7 @@ namespace mars
 
             GraphicsWidget* gw=getGraphicsWindow(id);
 
-            if(gw == NULL)
+            if(gw == nullptr)
             {
                 return;
             }
@@ -733,7 +733,7 @@ namespace mars
 
             GraphicsWidget* gw=getGraphicsWindow(id);
 
-            if(gw == NULL)
+            if(gw == nullptr)
             {
                 return;
             }
@@ -1045,7 +1045,7 @@ namespace mars
         {
             map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::const_iterator needle;
             needle = drawObjects_.find(id);
-            if(needle == drawObjects_.end()) return NULL;
+            if(needle == drawObjects_.end()) return nullptr;
             else return needle->second.get();
         }
 
@@ -1097,7 +1097,7 @@ namespace mars
 
                 // remove all child nodes from "transform" and add them to
                 // "transformSTL"
-                osg::Node* node = NULL;
+                osg::Node* node = nullptr;
                 while (transform->getNumChildren() > 0)
                 {
                     node = transform->getChild(0);
@@ -1162,7 +1162,7 @@ namespace mars
         void GraphicsManager::removeDrawObject(unsigned long id)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns == NULL) return;
+            if(ns == nullptr) return;
             DrawObject *drawObject = ns->object();
             if (drawObject)
             {
@@ -1178,7 +1178,7 @@ namespace mars
                                                const std::string &name) const
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns == NULL) return;
+            if(ns == nullptr) return;
             ns->object()->exportModel(name);
         }
 
@@ -1196,7 +1196,7 @@ namespace mars
         void GraphicsManager::setDrawObjectSelected(unsigned long id, bool val)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns == NULL) return;
+            if(ns == nullptr) return;
 
             std::vector<GraphicsEventClient*>::iterator jter;
             DrawObjectList::iterator drawit;
@@ -1227,25 +1227,25 @@ namespace mars
         void GraphicsManager::setDrawObjectPos(unsigned long id, const Vector &pos)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != NULL) ns->object()->setPosition(pos);
+            if(ns != nullptr) ns->object()->setPosition(pos);
         }
 
         void GraphicsManager::setDrawObjectRot(unsigned long id, const Quaternion &q)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != NULL) ns->object()->setQuaternion(q);
+            if(ns != nullptr) ns->object()->setQuaternion(q);
         }
 
         void GraphicsManager::setDrawObjectScale(unsigned long id, const Vector &scale)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != NULL) ns->object()->setScale(scale);
+            if(ns != nullptr) ns->object()->setScale(scale);
         }
 
         void GraphicsManager::setDrawObjectScaledSize(unsigned long id, const Vector &ext)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != NULL) ns->object()->setScaledSize(ext);
+            if(ns != nullptr) ns->object()->setScaledSize(ext);
         }
 
         void GraphicsManager::setDrawObjectMaterial(unsigned long id,
@@ -1291,13 +1291,13 @@ namespace mars
         void GraphicsManager::setDrawObjectNodeMask(unsigned long id, unsigned int bits)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != NULL) ns->object()->setBits(bits);
+            if(ns != nullptr) ns->object()->setBits(bits);
         }
 
         void GraphicsManager::setDrawObjectBrightness(unsigned long id, double v)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != NULL) ns->object()->setBrightness(v);
+            if(ns != nullptr) ns->object()->setBrightness(v);
         }
 
         void GraphicsManager::setBlending(unsigned long id, bool mode)
@@ -1315,19 +1315,19 @@ namespace mars
         void GraphicsManager::setSelectable(unsigned long id, bool val)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != NULL) ns->object()->setSelectable(val);
+            if(ns != nullptr) ns->object()->setSelectable(val);
         }
 
         void GraphicsManager::setDrawObjectRBN(unsigned long id, int val)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != NULL) ns->object()->setRenderBinNumber(val);
+            if(ns != nullptr) ns->object()->setRenderBinNumber(val);
         }
 
         void GraphicsManager::setDrawObjectShow(unsigned long id, bool val)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != NULL)
+            if(ns != nullptr)
             {
                 if(val)
                 {
@@ -1587,7 +1587,7 @@ namespace mars
         void GraphicsManager::updateLight(unsigned int i, bool recompileShader)
         {
             OSGLightStruct *osgLight = dynamic_cast<OSGLightStruct*>(myLights[i].lightSource.get());
-            if(osgLight != NULL)
+            if(osgLight != nullptr)
             {
                 osgLight->update(myLights[i].lStruct);
             }
@@ -1648,9 +1648,9 @@ namespace mars
         void GraphicsManager::hideCoords(const Vector &pos)
         {
             (void) pos;
-            if(positionedCoords.get()!=NULL)
+            if(positionedCoords.get()!=nullptr)
                 transformCoords->removeChild(positionedCoords.get());
-            if(transformCoords.get()!=NULL)
+            if(transformCoords.get()!=nullptr)
                 scene->removeChild(transformCoords.get());
         }
 
@@ -1715,7 +1715,7 @@ namespace mars
             const Vector &axis1, const Vector &axis2)
         {
             //remove old axis
-            if(axisDrawer!=NULL)
+            if(axisDrawer!=nullptr)
             {
                 scene->removeChild(axisDrawer.get());
             }
@@ -1784,7 +1784,7 @@ namespace mars
         }
 
         /**
-         * \throw std::runtime_error if action is \c PREVIEW_COLOR and mat is \c NULL.
+         * \throw std::runtime_error if action is \c PREVIEW_COLOR and mat is \c nullptr.
          */
         void GraphicsManager::preview(int action, bool resize,
                                       const vector<mars::interfaces::NodeData> &allNodes,
@@ -1820,9 +1820,9 @@ namespace mars
                 for(DrawObjects::iterator it = previewNodes_.begin();
                     it != previewNodes_.end(); ++it)
                 {
-                    if (mat == NULL)
+                    if (mat == nullptr)
                     {
-                        throw std::runtime_error("ERROR: Got NULL pointer in "
+                        throw std::runtime_error("ERROR: Got null-pointer in "
                                                  "GraphicsManager::preview(PREVIEW_COLOR)");
                     }
                     material = new OSGMaterialStruct(*mat);
@@ -1915,13 +1915,13 @@ namespace mars
                     return (*iter)->getHUDElement();
                 }
             }
-            return NULL;
+            return nullptr;
         }
 
         void GraphicsManager::switchHUDElementVis(unsigned long id)
         {
             HUDTexture *elem = (HUDTexture*) findHUDElement(id);
-            if(elem!=NULL)
+            if(elem!=nullptr)
             {
                 elem->switchCullMask();
             }
@@ -1931,7 +1931,7 @@ namespace mars
                                                double y)
         {
             HUDTexture *elem = (HUDTexture*) findHUDElement(id);
-            if(elem!=NULL)
+            if(elem!=nullptr)
             {
                 elem->setPos(x, y);
             }
@@ -1941,7 +1941,7 @@ namespace mars
                                                    std::string texturename)
         {
             HUDTexture *elem = (HUDTexture*) findHUDElement(id);
-            if(elem!=NULL)
+            if(elem!=nullptr)
             {
                 elem->setTexture(GuiHelper::loadTexture(texturename).get());
             }
@@ -1951,7 +1951,7 @@ namespace mars
                                                        void* data)
         {
             HUDTexture *elem = dynamic_cast<HUDTexture*>(findHUDElement(id));
-            if(elem!=NULL)
+            if(elem!=nullptr)
             {
                 elem->setImageData(data);
             }
@@ -1968,7 +1968,7 @@ namespace mars
             {
                 if((*jter)->getID() == window_id)
                 {
-                    if(elem!=NULL)
+                    if(elem!=nullptr)
                     {
                         if(depthComponent)
                             elem->setTexture((*jter)->getRTTDepthTexture());
@@ -1985,7 +1985,7 @@ namespace mars
                                                  double text_color[4])
         {
             HUDLabel *elem = (HUDLabel*) findHUDElement(id);
-            if(elem!=NULL) elem->setText(text, text_color);
+            if(elem!=nullptr) elem->setText(text, text_color);
         }
 
         void GraphicsManager::setHUDElementLines(unsigned long id,
@@ -1993,7 +1993,7 @@ namespace mars
                                                  double color[4])
         {
             HUDLines *elem = (HUDLines*) findHUDElement(id);
-            if(elem!=NULL) elem->setLines(v, color);
+            if(elem!=nullptr) elem->setLines(v, color);
         }
 
         ////// EVENTS
@@ -2685,7 +2685,7 @@ namespace mars
         {
             GraphicsWidget* gw=getGraphicsWindow(id);
 
-            if(gw == NULL)
+            if(gw == nullptr)
             {
                 std::cerr<<"window does not exist!"<<std::endl;
                 return gw;
@@ -2712,7 +2712,7 @@ namespace mars
                                             mars::interfaces::sReal radius)
         {
             OSGNodeStruct *ns = findDrawObject(id);
-            if(ns == NULL) return;
+            if(ns == nullptr) return;
             ns->object()->collideSphere(pos, radius);
         }
 
@@ -2720,7 +2720,7 @@ namespace mars
         {
             OSGNodeStruct *ns = findDrawObject(id);
             static Vector dummy;
-            if(ns == NULL) return dummy;
+            if(ns == nullptr) return dummy;
             return ns->object()->getPosition();
         }
 
@@ -2728,7 +2728,7 @@ namespace mars
         {
             OSGNodeStruct *ns = findDrawObject(id);
             static Quaternion dummy;
-            if(ns == NULL) return dummy;
+            if(ns == nullptr) return dummy;
             return ns->object()->getQuaternion();
         }
 
@@ -2773,7 +2773,7 @@ namespace mars
                 gc->setTrakingTransform(parentTransform);
             } else
             {
-                gc->setTrakingTransform(NULL);
+                gc->setTrakingTransform(nullptr);
             }
         }
 
@@ -2798,7 +2798,7 @@ namespace mars
 
         osg_material_manager::MaterialNode* GraphicsManager::getMaterialNode(const std::string &name)
         {
-            if(!materialManager) return NULL;
+            if(!materialManager) return nullptr;
             return materialManager->getNewMaterialGroup(name);
         }
 
@@ -2820,7 +2820,7 @@ namespace mars
             {
                 return iter->second->object()->getStateGroup();
             }
-            return NULL;
+            return nullptr;
         }
 
         void GraphicsManager::setUseShadow(bool v)
@@ -2838,7 +2838,7 @@ namespace mars
                 }
             } else
             {
-                shadowedScene->setShadowTechnique(NULL);
+                shadowedScene->setShadowTechnique(nullptr);
             }
             if(materialManager) materialManager->setUseShadow(v);
         }
@@ -2877,7 +2877,7 @@ namespace mars
             bool useShader = false;
             if(!pssm.valid())
             {
-                pssm = new ParallelSplitShadowMap(NULL,NUM_PSSM_SPLITS);
+                pssm = new ParallelSplitShadowMap(nullptr,NUM_PSSM_SPLITS);
 
                 //pssm->enableShadowGLSLFiltering(false);
                 pssm->setTextureResolution(shadowTextureSize.iValue);
@@ -2919,12 +2919,12 @@ namespace mars
         {
             if(shadowTechnique.sValue != s)
             {
-                shadowedScene->setShadowTechnique(NULL);
+                shadowedScene->setShadowTechnique(nullptr);
                 if(shadowMap.valid())
                 {
                     shadowMap->removeState(scene->getOrCreateStateSet());
                     shadowMap->removeTexture(shadowStateset.get());
-                    shadowMap = NULL;
+                    shadowMap = nullptr;
                 }
                 if(pssm.valid())
                 {
@@ -2934,7 +2934,7 @@ namespace mars
                         pssm->removeState(materialManager->getMainStateGroup()->getOrCreateStateSet());
                     }
                     pssm->removeTexture(shadowStateset.get());
-                    pssm = NULL;
+                    pssm = nullptr;
                 }
                 if(s=="pssm")
                 {

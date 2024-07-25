@@ -510,7 +510,7 @@ namespace mars
             {
                 return (*iter).second.get();
             }
-            return NULL;
+            return nullptr;
         }
 
         osgWidget::Window* GraphicsWidget::getWindowById(int wndId)
@@ -521,7 +521,7 @@ namespace mars
                 return (*iter).second.get();
             }
 
-            return NULL;
+            return nullptr;
 
         }
 
@@ -643,7 +643,7 @@ namespace mars
                 if(ip->second == nullptr && ip->first)
                 {
 #else
-                if(ip->second == NULL && ip->first)
+                if(ip->second == nullptr && ip->first)
                 {
 #endif
                     guiClickCallBack  call=  ip->first;
@@ -1121,7 +1121,7 @@ namespace mars
                 unsigned int screenWidth = 1024;
                 unsigned int screenHeight = 768;
 
-                if(wsi != NULL)
+                if(wsi != nullptr)
                 {
                     wsi->getScreenResolution(*(graphicsWindow->getTraits()), screenWidth, screenHeight);
                 }

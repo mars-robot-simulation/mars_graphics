@@ -27,8 +27,8 @@ namespace mars
         // Store current active window, which we change if we got an mouse in event
         // on another graphics window. This is needed because the focus handling isn't
         // working correctly and the mouse event are all captured by the first window.
-        QtOsgMixGraphicsWidget* QtOsgMixGraphicsWidget::activeWindow = NULL;
-        QtOsgMixGraphicsWidget* QtOsgMixGraphicsWidget::eventInWindow = NULL;
+        QtOsgMixGraphicsWidget* QtOsgMixGraphicsWidget::activeWindow = nullptr;
+        QtOsgMixGraphicsWidget* QtOsgMixGraphicsWidget::eventInWindow = nullptr;
 
         QtOsgMixGraphicsWidget* QtOsgMixGraphicsWidget::createInstance(
             void *parent, osg::Group *scene, unsigned long id, bool rtt_widget,
@@ -178,7 +178,7 @@ namespace mars
             if(activeWindow != eventInWindow)
             {
                 activeWindow = eventInWindow;
-                activeWindow->focusInEvent(NULL);
+                activeWindow->focusInEvent(nullptr);
                 activeWindow->mousePressEvent(e);
             }
             return;

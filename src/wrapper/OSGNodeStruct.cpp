@@ -30,7 +30,7 @@ namespace mars
         OSGNodeStruct::OSGNodeStruct(GraphicsManager *g,
                                      const NodeData &node, bool isPreview,
                                      unsigned long id)
-            : osg::Group(), drawObject_(NULL), id_(id), isPreview_(isPreview)
+            : osg::Group(), drawObject_(nullptr), id_(id), isPreview_(isPreview)
         {
             configmaps::ConfigMap map = node.map;
             unsigned long sharedID = 0;

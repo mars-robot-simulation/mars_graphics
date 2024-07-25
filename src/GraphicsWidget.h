@@ -91,7 +91,7 @@ namespace mars
             void setGrabFrames(bool grab);
             void setSaveFrames(bool grab);
 
-            virtual void* getWidget() {return NULL;}
+            virtual void* getWidget() {return nullptr;}
             virtual void showWidget() {};
 
             virtual void updateView();

@@ -8,7 +8,7 @@ namespace mars
     
         using mars::utils::Vector;
 
-        osg::ref_ptr<osg::Geode> CubeDrawObject::sharedCube = NULL;
+        osg::ref_ptr<osg::Geode> CubeDrawObject::sharedCube = nullptr;
 
         CubeDrawObject::CubeDrawObject(GraphicsManager *g)
             : DrawObject(g)

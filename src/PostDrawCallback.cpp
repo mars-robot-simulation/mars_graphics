@@ -19,7 +19,7 @@ namespace mars
             *image_id = 1;
             fprintf(stderr, "initialized postDrawCallback\n");
             imageMutex = new pthread_mutex_t;
-            pthread_mutex_init(imageMutex, NULL);
+            pthread_mutex_init(imageMutex, nullptr);
         }
 
         PostDrawCallback::~PostDrawCallback()
