@@ -30,11 +30,12 @@ namespace mars
         OSGNodeStruct::OSGNodeStruct(GraphicsManager *g,
                                      const NodeData &node, bool isPreview,
                                      unsigned long id)
-            : osg::Group(), drawObject_(nullptr), id_(id), isPreview_(isPreview)
+            : osg::Group(), drawObject_{nullptr}, id_{id}, isPreview_{isPreview}
         {
-            configmaps::ConfigMap map = node.map;
+            auto map = node.map;
             unsigned long sharedID = 0;
-            std::string filename, origname;
+            std::string filename;
+            std::string origname;
             std::string visualType;
 
             name_ = node.name;
@@ -49,12 +50,14 @@ namespace mars
                 {
                     filename = node.filename;
                     origname = node.origName;
-                } else
+                }
+                else
                 {
                     filename = "PRIMITIVE";
                     origname = visualType;
                 }
-            } else
+            }
+            else
             {
                 filename = node.filename;
                 origname = node.origName;
@@ -66,21 +69,21 @@ namespace mars
                 {
                 case mars::interfaces::NODE_TYPE_BOX:
                 {
-                    drawObject_ = new CubeDrawObject(g);
+                    drawObject_ = new CubeDrawObject{g};
                     break;
                 }
                 case mars::interfaces::NODE_TYPE_SPHERE:
                 {
                     vizSize.x() *= 2;
                     vizSize.y() = vizSize.z() = vizSize.x();
-                    drawObject_ = new SphereDrawObject(g);
+                    drawObject_ = new SphereDrawObject{g};
                     break;
                 }
                 case mars::interfaces::NODE_TYPE_REFERENCE:
                 {
 #warning add here an coordinate system item
                     //For now until we have an real coordinate system
-                    drawObject_ = new SphereDrawObject(g);
+                    drawObject_ = new SphereDrawObject{g};
                     break;
                 }
                 case mars::interfaces::NODE_TYPE_MESH:
@@ -88,43 +91,44 @@ namespace mars
                     vizSize.x() *= 2;
                     vizSize.z() = vizSize.y();
                     vizSize.y() = vizSize.x();
-                    drawObject_ = new CylinderDrawObject(g, 1, 1);
+                    drawObject_ = new CylinderDrawObject{g, 1, 1};
                     break;
                 case mars::interfaces::NODE_TYPE_CAPSULE:
                 {
                     vizSize.x() *= 2;
                     vizSize.z() = vizSize.y();
                     vizSize.y() = vizSize.x();
-                    drawObject_ = new CapsuleDrawObject(g);
+                    drawObject_ = new CapsuleDrawObject{g};
                     break;
                 }
                 case mars::interfaces::NODE_TYPE_PLANE:
                 {
-                    drawObject_ = new PlaneDrawObject(g, vizSize);
+                    drawObject_ = new PlaneDrawObject{g, vizSize};
                     break;
                 }
                 case mars::interfaces::NODE_TYPE_EMPTY:
                 {
-                    drawObject_ = new EmptyDrawObject(g);
+                    drawObject_ = new EmptyDrawObject{g};
                     break;
                 }
                 default:
                     fprintf(stderr,"Cannot find primitive type: %i(%s), at %s:%i\n",
                             NodeData::typeFromString(origname.c_str()),
                             origname.c_str(), __FILE__, __LINE__);
-                    throw std::runtime_error("unknown primitive type");
+                    throw std::runtime_error{"unknown primitive type"};
                 }
                 if(map.find("maxNumLights") != map.end())
                 {
                     drawObject_->setMaxNumLights(map["maxNumLights"]);
                 }
-                drawObject_->createObject(id, Vector(0.0, 0.0, 0.0), sharedID);
-                if(node.visual_size != Vector(0.0, 0.0, 0.0))
+                drawObject_->createObject(id, Vector::Zero(), sharedID);
+                if(node.visual_size != Vector::Zero())
                 {
                     vizSize = node.visual_size;
                 }
                 drawObject_->setScaledSize(vizSize);
-            } else if(origname.compare("terrain") == 0)
+            }
+            else if(origname.compare("terrain") == 0)
             {
                 // we have a heightfield
                 if(!node.terrain->pixelData)
@@ -148,27 +152,29 @@ namespace mars
                     if(map.hasKey("filePrefix"))
                     {
                         p << map["filePrefix"];
-                    };
-                    std::string gridFile = map["t_grid"];
+                    }
+                    auto gridFile = map["t_grid"].toString();
                     if(gridFile[0] != '/')
                     {
                         gridFile = p + "/" + gridFile;
                     }
-                    drawObject_ = new TerrainDrawObject(g, node.terrain, gridFile);
-                    ((TerrainDrawObject*)drawObject_)->setData(map);
-                } else
+                    drawObject_ = new TerrainDrawObject{g, node.terrain, gridFile};
+                    (static_cast<TerrainDrawObject*>(drawObject_))->setData(map);
+                }
+                else
                 {
-                    drawObject_ = new TerrainDrawObject(g, node.terrain);
+                    drawObject_ = new TerrainDrawObject{g, node.terrain};
                 }
                 if(map.find("maxNumLights") != map.end())
                 {
                     drawObject_->setMaxNumLights(map["maxNumLights"]);
                 }
-                drawObject_->createObject(id, Vector(node.terrain->targetWidth*0.5,
+                drawObject_->createObject(id, Vector{node.terrain->targetWidth*0.5,
                                                      node.terrain->targetHeight*0.5,
-                                                     0.0),
+                                                     0.0},
                                           sharedID);
-            } else
+            }
+            else
             { // we have to load the node from an import file
                 if(map.find("filename") == map.end())
                 {
@@ -178,14 +184,14 @@ namespace mars
                 {
                     map["origname"] = origname;
                 }
-                drawObject_ = new LoadDrawObject(g, map, node.ext);
+                drawObject_ = new LoadDrawObject{g, map, node.ext};
                 if(map.find("maxNumLights") != map.end())
                 {
                     drawObject_->setMaxNumLights(map["maxNumLights"]);
                 }
                 drawObject_->createObject(id, node.pivot, sharedID);
                 drawObject_->setScale(node.visual_scale);
-                if(node.visual_size != Vector(0.0, 0.0, 0.0))
+                if(node.visual_size != Vector::Zero())
                 {
                     drawObject_->setScaledSize(node.visual_size);
                 }
@@ -201,6 +207,13 @@ namespace mars
             {
                 drawObject_->setBrightness(map["brightness"]);
             }
+
+            assert(drawObject_);
+        }
+
+        OSGNodeStruct::~OSGNodeStruct()
+        {
+            delete drawObject_;
         }
 
         void OSGNodeStruct::edit(const NodeData &node, bool resize)
@@ -217,21 +230,26 @@ namespace mars
             if(fabs(bb.xMax()) > fabs(bb.xMin()))
             {
                 ex.x() = fabs(bb.xMax() - bb.xMin());
-            } else
+            }
+            else
             {
                 ex.x() = fabs(bb.xMin() - bb.xMax());
             }
+
             if(fabs(bb.yMax()) > fabs(bb.yMin()))
             {
                 ex.y() = fabs(bb.yMax() - bb.yMin());
-            } else
+            }
+            else
             {
                 ex.y() = fabs(bb.yMin() - bb.yMax());
             }
+
             if(fabs(bb.zMax()) > fabs(bb.zMin()))
             {
                 ex.z() = fabs(bb.zMax() - bb.zMin());
-            } else
+            }
+            else
             {
                 ex.z() = fabs(bb.zMin() - bb.zMax());
             }
@@ -245,13 +263,13 @@ namespace mars
             if(resize)
             {
                 drawObject_->getScaleMatrix()->setMatrix(osg::Matrix::scale(scaleX, scaleY, scaleZ));
-                drawObject_->getTransform()->setPivotPoint(osg::Vec3(
-                                                               node.pivot.x()*scaleX, node.pivot.y()*scaleY, node.pivot.z()*scaleZ));
+                drawObject_->getTransform()->setPivotPoint(osg::Vec3{
+                                                               node.pivot.x()*scaleX, node.pivot.y()*scaleY, node.pivot.z()*scaleZ});
             }
-            drawObject_->getTransform()->setPosition(osg::Vec3(
+            drawObject_->getTransform()->setPosition(osg::Vec3{
                                                          node.pos.x()+node.visual_offset_pos.x(),
                                                          node.pos.y()+node.visual_offset_pos.y(),
-                                                         node.pos.z()+node.visual_offset_pos.z()));
+                                                         node.pos.z()+node.visual_offset_pos.z()});
             oquat.set(node.rot.x(), node.rot.y(), node.rot.z(), node.rot.w());
             drawObject_->getTransform()->setAttitude(oquat);
         }

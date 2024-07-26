@@ -9,9 +9,8 @@
 
 namespace mars
 {
-    namespace
-    graphics {
-
+    namespace graphics
+    {
         /**
          * Wraps a NodeData in a osg::Group.
          * Handles previews and editing of NodeData groups.
@@ -24,9 +23,8 @@ namespace mars
              * Constructor creates a node in PREVIEW or CREATED state.
              * In PREVIEW state some ressources are not allocated (material,..)
              */
-            OSGNodeStruct(GraphicsManager *g,
-                          const mars::interfaces::NodeData &node,
-                          bool isPreview, unsigned long id);
+            OSGNodeStruct(GraphicsManager *g, const mars::interfaces::NodeData &node, bool isPreview, unsigned long id);
+            virtual ~OSGNodeStruct();
             /**
              * Edit this node, works only in the PREVIEW state.
              */

@@ -132,7 +132,12 @@ namespace mars
                 cfg->writeConfig(saveFile.c_str(), "Graphics");
                 libManager->releaseLibrary("cfg_manager");
             }
-            if(materialManager) libManager->releaseLibrary("osg_material_manager");
+
+            if(materialManager)
+            {
+                libManager->releaseLibrary("osg_material_manager");
+            }
+
             //fprintf(stderr, "Delete mars_graphics\n");
             delete framesFactory;
             if(dataBroker)
@@ -467,8 +472,9 @@ namespace mars
             {
                 //removeLight(i);
             }
-            for(auto drawObject: drawObjects_)
+            for(const auto& drawObject: drawObjects_)
             {
+                // TODO: solve differently! This modifies drawObjects_!
                 removeDrawObject(drawObject.first);
             }
             DrawCoreIds.clear();
@@ -1170,7 +1176,6 @@ namespace mars
                 drawObject->hide();
                 scene->removeChild(drawObject->getPosTransform());
                 shadowedScene->removeChild(drawObject->getPosTransform());
-                delete drawObject;
             }
             drawObjects_.erase(id);
         }
