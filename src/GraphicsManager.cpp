@@ -2,8 +2,6 @@
 #include "config.h"
 #include <mars_utils/misc.h>
 
-//#include <osgUtil/Optimizer>
-
 #include <osgDB/WriteFile>
 #include <osg/Fog>
 #include <osg/LightModel>
@@ -45,6 +43,8 @@
 
 using namespace osg_material_manager;
 using namespace configmaps;
+
+
 namespace mars
 {
     namespace graphics
@@ -63,30 +63,30 @@ namespace mars
         GraphicsManager::GraphicsManager(lib_manager::LibManager *theManager,
                                          void *myQTWidget)
             : GraphicsManagerInterface(theManager),
-              osgWidget(nullptr),
-              guiHelper(new GuiHelper(this)),
-              next_hud_id(1),
-              next_draw_object_id(1),
-              next_window_id(1),
-              nextPreviewID(1),
-              viewer(0),
-              scene(new osg::Group),
-              shadowedScene(new osgShadow::ShadowedScene),
-              lightGroup(new osg::Group),
-              globalStateset(new osg::StateSet),
-              grid(nullptr),
-              show_grid(false),
-              showClouds_(false),
-              show_coords(true),
-              useFog(true),
-              useNoise(false),
-              drawLineLaser(false),
-              cfg(0),
-              ignore_next_resize(0),
-              set_window_prop(0),
-              initialized(false),
-              activeWindow(nullptr),
-              materialManager(nullptr)
+              osgWidget{nullptr},
+              guiHelper{new GuiHelper{this}},
+              next_hud_id{1},
+              next_draw_object_id{1},
+              next_window_id{1},
+              nextPreviewID{1},
+              viewer{nullptr},
+              scene{new osg::Group},
+              shadowedScene{new osgShadow::ShadowedScene},
+              lightGroup{new osg::Group},
+              globalStateset{new osg::StateSet},
+              grid{nullptr},
+              show_grid{false},
+              showClouds_{false},
+              show_coords{true},
+              useFog{true},
+              useNoise{false},
+              drawLineLaser{false},
+              cfg{nullptr},
+              ignore_next_resize{0},
+              set_window_prop{false},
+              initialized{false},
+              activeWindow{nullptr},
+              materialManager{nullptr}
         {
             //osg::setNotifyLevel( osg::WARN );
 
@@ -164,9 +164,9 @@ namespace mars
                 if(cfg)
                 {
                     configPath = cfg->getOrCreateProperty("Config", "config_path",
-                                                          string("."));
+                                                          std::string{"."});
 
-                    string loadFile = configPath.sValue;
+                    auto loadFile = configPath.sValue;
                     loadFile.append("/mars_Graphics.yaml");
                     cfg->loadConfig(loadFile.c_str());
 
@@ -178,7 +178,8 @@ namespace mars
                                              &multisamples.iValue))
                     {
                         multisamples.paramId = cfg->getParamId("Graphics", "num multisamples");
-                    } else
+                    }
+                    else
                     {
                         multisamples.paramId = cfg->createParam(string("Graphics"),
                                                                 string("num multisamples"),
@@ -189,7 +190,7 @@ namespace mars
                                          dynamic_cast<cfg_manager::CFGClient*>(this));
                     setMultisampling(multisamples.iValue);
 
-                    std::string s = cfg->getOrCreateProperty("Graphics", "resources_path",
+                    const auto& s = cfg->getOrCreateProperty("Graphics", "resources_path",
                                                              "",
                                                              dynamic_cast<cfg_manager::CFGClient*>(this)).sValue;
                     if(s != "")
@@ -239,7 +240,8 @@ namespace mars
                     vsyncProp = cfg->getOrCreateProperty("Graphics",
                                                          "vsync",
                                                          false, this);
-                } else
+                }
+                else
                 {
                     marsShadow.bValue = false;
                 }
@@ -270,10 +272,10 @@ namespace mars
                 }
 
                 // background color for the scene
-                graphicOptions.clearColor = mars::utils::Color(0.55, 0.67, 0.88, 1.0);
+                graphicOptions.clearColor = mars::utils::Color{0.55, 0.67, 0.88, 1.0};
 
                 { // setup FOG
-                    graphicOptions.fogColor = mars::utils::Color(0.2, 0.2, 0.2, 1.0);
+                    graphicOptions.fogColor = mars::utils::Color{0.2, 0.2, 0.2, 1.0};
                     graphicOptions.fogEnabled = true;
                     graphicOptions.fogDensity = 0.35;
                     graphicOptions.fogStart = 10.0;
@@ -291,7 +293,7 @@ namespace mars
                 // some fixed function pipeline stuff...
                 // i guess the default is smooth shading, that means
                 // light influence is calculated per vertex and interpolated for fragments.
-                osg::ref_ptr<osg::LightModel> myLightModel = new osg::LightModel;
+                auto myLightModel = osg::ref_ptr<osg::LightModel>{new osg::LightModel};
                 myLightModel->setTwoSided(false);
                 globalStateset->setAttributeAndModes(myLightModel.get(), osg::StateAttribute::ON);
 
@@ -328,17 +330,17 @@ namespace mars
 
 //           shadowedScene->setShadowTechnique( sm.get() );
 // #elif USE_PSSM_SHADOW
-                    // todo: it shoud be fine to use setShadowTechnique here but somehow it is not working
+                    // TODO: it shoud be fine to use setShadowTechnique here but somehow it is not working
                     if(shadowTechnique.sValue == "pssm")
                     {
-                        pssm = new ParallelSplitShadowMap(nullptr,NUM_PSSM_SPLITS);
+                        pssm = new ParallelSplitShadowMap(nullptr, NUM_PSSM_SPLITS);
 
                         //pssm->enableShadowGLSLFiltering(false);
                         pssm->setTextureResolution(shadowTextureSize.iValue);
                         pssm->setMinNearDistanceForSplits(0);
                         pssm->setMaxFarDistance(500);
                         pssm->setMoveVCamBehindRCamFactor(0);
-                        pssm->setPolygonOffset(osg::Vec2(1.2,1.2));
+                        pssm->setPolygonOffset(osg::Vec2{1.2, 1.2});
                         //pssm->applyState(shadowStateset.get());
                         if(marsShadow.bValue)
                         {
@@ -373,7 +375,7 @@ namespace mars
                 //effectNode->setIntensity(2.5);
                 //effectNode->setScale(4);
                 //scene->addChild(effectNode.get());
-                grid = new GridPrimitive(osgWidget);
+                grid = new GridPrimitive{osgWidget};
                 if(showGridProp.bValue) showGrid();
 
                 show_coords = showCoordsProp.bValue;
@@ -381,7 +383,6 @@ namespace mars
                 {
                     showCoords();
                 }
-
 
                 // reset number of frames
                 framecount = 0;
@@ -426,19 +427,18 @@ namespace mars
                         shadowMap->applyState(materialManager->getMainStateGroup()->getOrCreateStateSet());
                     }
                     shadowedScene->addChild(materialManager->getMainStateGroup());
-                    ConfigMap map = ConfigMap::fromYamlFile(resources_path.sValue+"/defaultMaterials.yml");
+                    auto map = ConfigMap::fromYamlFile(resources_path.sValue+"/defaultMaterials.yml");
                     MaterialData md;
                     ConfigMap defM;
                     if(map.hasKey("Materials"))
                     {
-                        for(int i=0; i<(int)map["Materials"].size(); ++i)
+                        for(size_t i=0; i<map["Materials"].size(); ++i)
                         {
                             md.toConfigMap(&defM);
                             defM.append(map["Materials"][i]);
                             if(defM.hasKey("diffuseTexture"))
                             {
-                                defM["diffuseTexture"] = (resources_path.sValue + "/" +
-                                                          (std::string)defM["diffuseTexture"]);
+                                defM["diffuseTexture"] = (resources_path.sValue + "/" + defM["diffuseTexture"].toString());
                             }
                             materialManager->createMaterial(defM["name"], defM);
                         }
@@ -448,9 +448,13 @@ namespace mars
                 //setShadowTechnique(shadowTechnique.sValue);
 
                 if(backfaceCulling.bValue)
+                {
                     globalStateset->setAttributeAndModes(cull, osg::StateAttribute::ON);
+                }
                 else
+                {
                     globalStateset->setAttributeAndModes(cull, osg::StateAttribute::OFF);
+                }
                 initialized = true;
             }
         }
@@ -459,14 +463,13 @@ namespace mars
         void GraphicsManager::reset()
         {
             //remove graphics stuff & rearrange light numbers
-            for(unsigned int i=0; i<myLights.size(); i++)
+            for(size_t i=0; i<myLights.size(); i++)
             {
                 //removeLight(i);
             }
-            for(DrawObjects::iterator iter=drawObjects_.begin();
-                iter!=drawObjects_.end(); iter=drawObjects_.begin())
+            for(auto drawObject: drawObjects_)
             {
-                removeDrawObject(iter->first);
+                removeDrawObject(drawObject.first);
             }
             DrawCoreIds.clear();
             clearDrawItems();
@@ -479,9 +482,8 @@ namespace mars
 
         void GraphicsManager::removeGraphicsUpdateInterface(GraphicsUpdateInterface *g)
         {
-            std::list<interfaces::GraphicsUpdateInterface*>::iterator it;
-            it = find(graphicsUpdateObjects.begin(), graphicsUpdateObjects.end(), g);
-            if(it!=graphicsUpdateObjects.end())
+            auto it = find(std::begin(graphicsUpdateObjects), std::end(graphicsUpdateObjects), g);
+            if(it!=std::end(graphicsUpdateObjects))
             {
                 graphicsUpdateObjects.erase(it);
             }
@@ -501,17 +503,20 @@ namespace mars
          */
         void GraphicsManager::getCameraInfo(mars::interfaces::cameraStruct *cs) const
         {
-            if(activeWindow) activeWindow->getCameraInterface()->getCameraInfo(cs);
+            if(activeWindow)
+            {
+                activeWindow->getCameraInterface()->getCameraInfo(cs);
+            }
         }
 
         void* GraphicsManager::getScene() const
         {
-            return (void*)scene.get();
+            return static_cast<void*>(scene.get());
         }
 
         void* GraphicsManager::getScene2() const
         {
-            return (void*)dynamic_cast<osg::Node*>(shadowedScene.get());
+            return static_cast<void*>(dynamic_cast<osg::Node*>(shadowedScene.get()));
         }
 
         void GraphicsManager::saveScene(const string &filename) const
@@ -526,43 +531,44 @@ namespace mars
 
         void* GraphicsManager::getStateSet() const
         {
-            return (void*)globalStateset.get();
+            return static_cast<void*>(globalStateset.get());
         }
 
         void GraphicsManager::update()
         {
             //update drawElements
-            for(unsigned int i=0; i<draws.size(); i++)
+            for(size_t i=0; i<draws.size(); i++)
             {
-                drawMapper &draw = draws[i];
+                auto& draw = draws[i];
                 vector<draw_item> tmp_ditem;
                 vector<osg::Node*> tmp_nodes;
                 //update draws
                 draw.ds.ptr_draw->update(&(draw.ds.drawItems));
 
-                for(unsigned int j=0; j<draw.ds.drawItems.size(); j++)
+                for(size_t j=0; j<draw.ds.drawItems.size(); j++)
                 {
-                    draw_item &di = draw.ds.drawItems[j];
+                    auto& di = draw.ds.drawItems[j];
 
                     if(di.draw_state == DRAW_STATE_ERASE)
                     {
                         scene->removeChild(draw.nodes[j]);
-                    } else if(di.draw_state == DRAW_STATE_CREATE)
+                    }
+                    else if(di.draw_state == DRAW_STATE_CREATE)
                     {
-                        std::string font_path = resources_path.sValue;
+                        auto font_path = resources_path.sValue;
                         font_path.append("/Fonts");
-                        osg::ref_ptr<osg::Group> osgNode = new OSGDrawItem(osgWidget, di,
-                                                                           font_path);
+                        auto osgNode = osg::ref_ptr<osg::Group>{new OSGDrawItem(osgWidget, di, font_path)};
                         scene->addChild(osgNode.get());
 
                         di.draw_state = DRAW_UNKNOWN;
                         tmp_ditem.push_back(di);
                         tmp_nodes.push_back(osgNode.get());
-                    } else if(di.draw_state == DRAW_STATE_UPDATE)
+                    }
+                    else if(di.draw_state == DRAW_STATE_UPDATE)
                     {
                         assert(draws[i].nodes.size() > j);
-                        osg::Node *n = draws[i].nodes[j];
-                        OSGDrawItem *diWrapper = dynamic_cast<OSGDrawItem*>(n->asGroup()); // TODO: asGroup unneeded?
+                        auto* n = draws[i].nodes[j];
+                        auto* diWrapper = dynamic_cast<OSGDrawItem*>(n->asGroup()); // TODO: asGroup unneeded?
                         assert(diWrapper != nullptr); // TODO: handle this case better
 
                         diWrapper->update(di);
@@ -594,22 +600,20 @@ namespace mars
         void GraphicsManager::setGraphicOptions(const mars::interfaces::GraphicData &options,
                                                 bool ignoreClearColor)
         {
-            osg::Fog *myFog;
-
-            myFog = (osg::Fog*)globalStateset->getAttribute(osg::StateAttribute::FOG);
+            auto* myFog = dynamic_cast<osg::Fog*>(globalStateset->getAttribute(osg::StateAttribute::FOG));
 
             graphicOptions = options;
             if(!ignoreClearColor)
             {
-                for(unsigned int i=0; i<graphicsWindows.size(); i++)
+                for(size_t i=0; i<graphicsWindows.size(); i++)
                 {
                     graphicsWindows[i]->setClearColor(graphicOptions.clearColor);
                 }
             }
 
-            myFog->setColor(osg::Vec4(graphicOptions.fogColor.r,
+            myFog->setColor(osg::Vec4{graphicOptions.fogColor.r,
                                       graphicOptions.fogColor.g,
-                                      graphicOptions.fogColor.b, 1.0));
+                                      graphicOptions.fogColor.b, 1.0});
             myFog->setStart(graphicOptions.fogStart);
             myFog->setEnd(graphicOptions.fogEnd);
             myFog->setDensity(graphicOptions.fogDensity);
@@ -624,7 +628,11 @@ namespace mars
                 globalStateset->setMode(GL_FOG, osg::StateAttribute::OFF);
                 useFog = false;
             }
-            if(materialManager) materialManager->setUseFog(useFog);
+
+            if(materialManager)
+            {
+                materialManager->setUseFog(useFog);
+            }
         }
 
         void GraphicsManager::setWidget(GraphicsWidget *widget)
@@ -635,13 +643,11 @@ namespace mars
         // this function should be deprecated
         void GraphicsManager::setTexture(unsigned long id, const string &filename)
         {
-            std::vector<nodemanager>::iterator iter;
-
-            for(iter=myNodes.begin(); iter!=myNodes.end(); iter++)
+            for(auto& node: myNodes)
             {
-                if((*iter).index == id)
+                if(node.index == id)
                 {
-                    osg::StateSet* state = (*iter).matrix->getChild(0)->getOrCreateStateSet();
+                    auto* const state = node.matrix->getChild(0)->getOrCreateStateSet();
                     state->setTextureAttributeAndModes(0, GuiHelper::loadTexture(filename).get(),
                                                        osg::StateAttribute::ON |
                                                        osg::StateAttribute::PROTECTED);
@@ -653,15 +659,15 @@ namespace mars
         unsigned long GraphicsManager::new3DWindow(void *myQTWidget, bool rtt,
                                                    int width, int height, const std::string &name)
         {
-            GraphicsWidget *gw;
-
+            GraphicsWidget* gw; // TODO: Lambda for initialization
             if(graphicsWindows.size() > 0)
             {
                 gw = QtOsgMixGraphicsWidget::createInstance(myQTWidget, scene.get(),
                                                             next_window_id++, rtt,
                                                             this);
                 gw->initializeOSG(myQTWidget, graphicsWindows[0], width, height);
-            } else
+            }
+            else
             {
 
                 gw = QtOsgMixGraphicsWidget::createInstance(myQTWidget, scene.get(),
@@ -676,6 +682,7 @@ namespace mars
                 */
                 gw->initializeOSG(myQTWidget, 0, width, height, vsyncProp.bValue);
             }
+
             activeWindow = gw;
             gw->setName(name);
             gw->setClearColor(graphicOptions.clearColor);
@@ -685,9 +692,9 @@ namespace mars
             if(!rtt)
             {
                 setActiveWindow(next_window_id-1);
-                gw->setGraphicsEventHandler((GraphicsEventInterface*)this);
+                gw->setGraphicsEventHandler(static_cast<GraphicsEventInterface*>(this));
 
-                HUD *myHUD = new HUD(next_window_id);
+                auto* const myHUD = new HUD{next_window_id};
                 myHUD->init(gw->getGraphicsWindow());
                 myHUD->setViewSize(hudWidth, hudHeight);
 
@@ -695,30 +702,28 @@ namespace mars
 
                 // iterator over hudElements
 
-                for(HUDElements::iterator iter = hudElements.begin();
-                    iter != hudElements.end(); iter++)
-                    gw->addHUDElement((*iter)->getHUDElement());
-
+                for(const auto& hudElement: hudElements)
+                {
+                    gw->addHUDElement(hudElement->getHUDElement());
+                }
             }
             return next_window_id - 1;
         }
 
         void* GraphicsManager::getView(unsigned long id)
         {
-
-            GraphicsWidget* gw=getGraphicsWindow(id);
+            auto* const gw = getGraphicsWindow(id);
 
             if(gw == nullptr)
             {
                 return gw;
             }
-            return (void*) gw->getView();
+            return static_cast<void*>(gw->getView());
         }
 
         void GraphicsManager::deactivate3DWindow(unsigned long id)
         {
-
-            GraphicsWidget* gw=getGraphicsWindow(id);
+            auto* const gw = getGraphicsWindow(id);
 
             if(gw == nullptr)
             {
@@ -730,8 +735,7 @@ namespace mars
 
         void GraphicsManager::activate3DWindow(unsigned long id)
         {
-
-            GraphicsWidget* gw=getGraphicsWindow(id);
+            auto* const gw = getGraphicsWindow(id);
 
             if(gw == nullptr)
             {
@@ -742,84 +746,76 @@ namespace mars
 
         GraphicsWindowInterface* GraphicsManager::get3DWindow(unsigned long id) const
         {
-            std::vector<GraphicsWidget*>::const_iterator iter;
-
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+                                        [id](GraphicsWidget* w){ return w->getID() == id;});
+            if (gwItr == std::end(graphicsWindows))
             {
-                if((*iter)->getID() == id)
-                {
-                    return (GraphicsWindowInterface*)(*iter);
-                }
+                return nullptr;
             }
-            return 0;
+
+            return static_cast<GraphicsWindowInterface*>(*gwItr);
         }
 
         GraphicsWindowInterface* GraphicsManager::get3DWindow(const std::string &name) const
         {
-            std::vector<GraphicsWidget*>::const_iterator iter;
-
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+                                        [&name](GraphicsWidget* w){ return w->getName() == name;});
+            if (gwItr == std::end(graphicsWindows))
             {
-                if((*iter)->getName().compare(name) == 0)
-                {
-                    return (GraphicsWindowInterface*)(*iter);
-                }
+                return nullptr;
             }
-            return 0;
+
+            return static_cast<GraphicsWindowInterface*>(*gwItr);
         }
 
 
         void GraphicsManager::remove3DWindow(unsigned long id)
         {
-            std::vector<GraphicsWidget*>::iterator iter;
-
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+                                        [id](GraphicsWidget* w){ return w->getID() == id;});
+            if (gwItr == std::end(graphicsWindows))
             {
-                if((*iter)->getID() == id)
-                {
-                    delete (*iter);
-                    break;
-                }
+                return;
             }
+
+            delete *gwItr;
+            // TODO: Also erase pointer?!
+            // graphicsWindows.erase(gwItr);
         }
 
         void GraphicsManager::removeGraphicsWidget(unsigned long id)
         {
-            std::vector<GraphicsWidget*>::iterator iter;
-
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+                                        [id](GraphicsWidget* w){ return w->getID() == id;});
+            if (gwItr == std::end(graphicsWindows))
             {
-                if((*iter)->getID() == id)
-                {
-                    viewer->removeView((*iter)->getView());
-                    graphicsWindows.erase(iter);
-                    break;
-                }
+                return;
             }
+
+            viewer->removeView((*gwItr)->getView());
+            // TODO: Also delete graphicsWindow?
+            // delete *gwItr;
+            graphicsWindows.erase(gwItr);
         }
 
 
         GraphicsWidget* GraphicsManager::getGraphicsWindow(unsigned long id) const
         {
-            std::vector<GraphicsWidget*>::const_iterator iter;
-
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+                                        [id](GraphicsWidget* w){ return w->getID() == id;});
+            if (gwItr == std::end(graphicsWindows))
             {
-                if((*iter)->getID() == id)
-                {
-                    return *iter;
-                }
+                return nullptr;
             }
-            return 0;
+
+            return *gwItr;
         }
 
         void GraphicsManager::getList3DWindowIDs(std::vector<unsigned long> *ids) const
         {
-            std::vector<GraphicsWidget*>::const_iterator iter;
-
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            for(const auto& graphicsWindow: graphicsWindows)
             {
-                ids->push_back((*iter)->getID());
+                ids->push_back(graphicsWindow->getID());
             }
         }
 
@@ -827,67 +823,59 @@ namespace mars
         {
             long myTime = utils::getTime();
             long timeDiff;
-            std::list<interfaces::GraphicsUpdateInterface*>::iterator it;
-            std::vector<GraphicsWidget*>::iterator iter;
 
-            for(it=graphicsUpdateObjects.begin();
-                it!=graphicsUpdateObjects.end(); ++it)
+            for(auto& graphicsUpdateObject: graphicsUpdateObjects)
             {
-                (*it)->preGraphicsUpdate();
+                graphicsUpdateObject->preGraphicsUpdate();
             }
             timeDiff = getTimeDiff(myTime);
             myTime += timeDiff;
             preTime += timeDiff;
 
             update();
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            for(auto& graphicsWindow: graphicsWindows)
             {
-                (*iter)->updateView();
+                graphicsWindow->updateView();
             }
             timeDiff = getTimeDiff(myTime);
             myTime += timeDiff;
             updateTime += timeDiff;
 
             vector<mars::interfaces::LightData*> lightList;
-            vector<mars::interfaces::LightData*>::iterator lightIt;
             getLights(&lightList);
-            if(lightList.size() == 0) lightList.push_back(&defaultLight.lStruct);
+            if(lightList.size() == 0)
+            {
+                lightList.push_back(&defaultLight.lStruct);
+            }
 
-            map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::iterator drawIter;
-
-            for (unsigned int i=0; i<myLights.size(); i++)
+            for(size_t i=0; i < myLights.size(); i++)
             {
                 //return only the used lights
                 if(!myLights[i].free)
                 {
-                    if(myLights[i].lStruct.drawID != 0)
+                    const auto& drawID = myLights[i].lStruct.drawID;
+                    if(drawID != 0)
                     {
-                        for(drawIter=drawObjects_.begin(); drawIter!=drawObjects_.end(); ++drawIter)
-                        {
-                            if(drawIter->first == myLights[i].lStruct.drawID)
-                            {
-                                Vector pos = drawIter->second->object()->getPosition();
-                                Quaternion q = drawIter->second->object()->getQuaternion();
-                                myLights[i].lStruct.pos = pos;
-                                myLights[i].light->setPosition(osg::Vec4(pos.x(), pos.y(),
-                                                                         pos.z()+0.1, 1.0));
-                                pos = q*Vector(1, 0, 0);
-                                myLights[i].lStruct.lookAt = pos;
-                                myLights[i].light->setDirection(osg::Vec3(pos.x(), pos.y(),
-                                                                          pos.z()));
-                                break;
-                            }
-                        }
-                    } else if(myLights[i].lStruct.node != "")
+                        auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
+                                                            [&drawID](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x)
+                                                            { return x.first == drawID; });
+                        // Set position
+                        auto pos = drawObjectItr->second->object()->getPosition();
+                        const auto& q = drawObjectItr->second->object()->getQuaternion();
+                        myLights[i].lStruct.pos = pos;
+                        myLights[i].light->setPosition(osg::Vec4{pos.x(), pos.y(), pos.z()+0.1, 1.0});
+                        // Set direction
+                        pos = q*Vector{1, 0, 0};
+                        myLights[i].lStruct.lookAt = pos;
+                        myLights[i].light->setDirection(osg::Vec3{pos.x(), pos.y(), pos.z()});
+                    }
+                    else if(myLights[i].lStruct.node != "")
                     {
-                        for(drawIter=drawObjects_.begin(); drawIter!=drawObjects_.end(); ++drawIter)
-                        {
-                            if(drawIter->second->name() == myLights[i].lStruct.node)
-                            {
-                                myLights[i].lStruct.drawID = drawIter->first;
-                                break;
-                            }
-                        }
+                        const auto& nodeName = myLights[i].lStruct.node;
+                        auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
+                                                            [&nodeName](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x)
+                                                            { return x.second->name() == nodeName; });
+                        myLights[i].lStruct.drawID = drawObjectItr->first;
                     }
                 }
             }
@@ -924,11 +912,11 @@ namespace mars
             myTime += timeDiff;
             frameTime += timeDiff;
             ++framecount;
-            for(it=graphicsUpdateObjects.begin();
-                it!=graphicsUpdateObjects.end(); ++it)
+            for(auto& graphicsUpdateObject: graphicsUpdateObjects)
             {
-                (*it)->postGraphicsUpdate();
+                graphicsUpdateObject->postGraphicsUpdate();
             }
+
             timeDiff = getTimeDiff(myTime);
             myTime += timeDiff;
             postTime += timeDiff;
@@ -964,7 +952,8 @@ namespace mars
                 {
                     w->grabFocus();
                     viewer->setCameraWithFocus(w->getMainCamera());
-                } else
+                }
+                else
                 {
                     w->unsetFocus();
                 }
@@ -973,104 +962,112 @@ namespace mars
 
         void* GraphicsManager::getQTWidget(unsigned long id) const
         {
-            std::vector<GraphicsWidget*>::const_iterator iter;
+            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+                                                    [id](GraphicsWidget* const x) { return x->getID() == id; });
 
-            for (iter = graphicsWindows.begin(); iter != graphicsWindows.end(); iter++)
+            if (graphicsWindowItr == std::end(graphicsWindows))
             {
-                if ((*iter)->getID() == id)
-                {
-                    return (*iter)->getWidget();
-                }
+                return nullptr;
             }
-            return 0;
+
+            return (*graphicsWindowItr)->getWidget();
         }
 
         void GraphicsManager::showQTWidget(unsigned long id)
         {
-            std::vector<GraphicsWidget*>::iterator iter;
+            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+                                                    [id](GraphicsWidget* const x) { return x->getID() == id; });
 
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            if (graphicsWindowItr == std::end(graphicsWindows))
             {
-                if((*iter)->getID() == id)
-                {
-                    (*iter)->showWidget();
-                }
+                return;
             }
+
+            (*graphicsWindowItr)->showWidget();
         }
 
         void GraphicsManager::setGraphicsWindowGeometry(unsigned long id,
                                                         int top, int left,
                                                         int width, int height)
         {
-            std::vector<GraphicsWidget*>::iterator iter;
+            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+                                                    [id](GraphicsWidget* const x) { return x->getID() == id; });
 
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            if (graphicsWindowItr == std::end(graphicsWindows))
             {
-                if((*iter)->getID() == id)
-                {
-                    (*iter)->setWGeometry(top, left, width, height);
-                }
+                return;
             }
+
+            (*graphicsWindowItr)->setWGeometry(top, left, width, height);
         }
 
         void GraphicsManager::getGraphicsWindowGeometry(unsigned long id,
                                                         int *top, int *left,
                                                         int *width, int *height) const
         {
-            std::vector<GraphicsWidget*>::const_iterator iter;
+            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+                                                    [id](GraphicsWidget* const x) { return x->getID() == id; });
 
-            for(iter=graphicsWindows.begin(); iter!=graphicsWindows.end(); iter++)
+            if (graphicsWindowItr == std::end(graphicsWindows))
             {
-                if((*iter)->getID() == id)
-                {
-                    (*iter)->getWGeometry(top, left, width, height);
-                }
+                return;
             }
+
+            (*graphicsWindowItr)->getWGeometry(top, left, width, height);
         }
 
         ////// DRAWOBJECTS
 
         unsigned long GraphicsManager::findCoreObject(unsigned long draw_id) const
         {
-            map<unsigned long int, unsigned long int>::const_iterator it;
-            it = DrawCoreIds.find(draw_id);
+            const auto it = DrawCoreIds.find(draw_id);
             if (it == DrawCoreIds.end())
+            {
                 return 0;
+            }
             else
+            {
                 return it->second;
+            }
         }
 
 
         OSGNodeStruct* GraphicsManager::findDrawObject(unsigned long id) const
         {
-            map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::const_iterator needle;
-            needle = drawObjects_.find(id);
-            if(needle == drawObjects_.end()) return nullptr;
-            else return needle->second.get();
+            auto needle = drawObjects_.find(id);
+            if(needle == drawObjects_.end())
+            {
+                return nullptr;
+            }
+
+            return needle->second.get();
         }
 
         unsigned long GraphicsManager::addDrawObject(const mars::interfaces::NodeData &snode,
                                                      bool activated)
         {
             unsigned long id = next_draw_object_id++;
-            vector<mars::interfaces::LightData*> lightList;
             int mask = 0;
 
+            vector<mars::interfaces::LightData*> lightList;
             getLights(&lightList);
-            if(lightList.size() == 0) lightList.push_back(&defaultLight.lStruct);
-            osg::ref_ptr<OSGNodeStruct> drawObject = new OSGNodeStruct(this, snode, false, id);
-            osg::PositionAttitudeTransform *transform = drawObject->object()->getPosTransform();
+            if(lightList.size() == 0)
+            {
+                lightList.push_back(&defaultLight.lStruct);
+            }
+            auto drawObject = osg::ref_ptr<OSGNodeStruct>{new OSGNodeStruct{this, snode, false, id}};
+            auto* const transform = drawObject->object()->getPosTransform();
 
-            DrawCoreIds.insert(pair<unsigned long int, unsigned long int>(id, snode.index));
+            DrawCoreIds.insert(std::make_pair(id, snode.index));
             drawObjects_[id] = drawObject;
-            ConfigMap config = snode.map;
-            if(config.hasKey("createFrame") and (bool)config["createFrame"] == true)
+            auto* const configPtr = const_cast<ConfigMap*>(&(snode.map));
+            if(configPtr->hasKey("createFrame") and static_cast<bool>((*configPtr)["createFrame"]) == true)
             {
                 drawObject->object()->frame = framesFactory->createFrame();
                 drawObject->object()->frame->setScale(scaleFramesProp.dValue);
                 if(showFramesProp.bValue)
                 {
-                    scene->addChild((osg::PositionAttitudeTransform*)drawObject->object()->frame->getOSGNode());
+                    scene->addChild(static_cast<osg::PositionAttitudeTransform*>(drawObject->object()->frame->getOSGNode()));
                 }
             }
             if(snode.isShadowCaster)
@@ -1092,8 +1089,8 @@ namespace mars
                (snode.filename.substr(snode.filename.size()-4, 4) == ".stl"))
             {
                 // create the new transformation to be added
-                osg::ref_ptr<osg::PositionAttitudeTransform> transformSTL =
-                    new osg::PositionAttitudeTransform();
+                auto transformSTL = osg::ref_ptr<osg::PositionAttitudeTransform>{
+                    new osg::PositionAttitudeTransform()};
 
                 // remove all child nodes from "transform" and add them to
                 // "transformSTL"
@@ -1135,35 +1132,39 @@ namespace mars
                 if(shadowMap.valid() && snode.map.find("shadowCenterRadius") != snode.map.end())
                 {
                     shadowMap->setCenterObject(drawObject->object());
-                    configmaps::ConfigMap m = snode.map;
-                    shadowMap->setRadius(m["shadowCenterRadius"][0]);
+                    auto* const configPtr = const_cast<ConfigMap*>(&(snode.map));
+                    shadowMap->setRadius((*configPtr)["shadowCenterRadius"][0]);
                 }
             }
             //osgUtil::Optimizer optimizer;
             //optimizer.optimize(shadowedScene.get());
 
-            // todo: handle preview mode
-            // todo: this will not work if material.exists = false
+            // TODO: handle preview mode
+            // TODO: this will not work if material.exists = false
             return id;
         }
 
         unsigned long GraphicsManager::getDrawID(const std::string &name) const
         {
-            for(auto &it: drawObjects_)
+            auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
+                                                [&name](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x) { return x.second->name() == name; });
+            if (drawObjectItr == std::end(drawObjects_))
             {
-                if(it.second->name() == name)
-                {
-                    return it.first;
-                }
+                return 0;
             }
-            return 0;
+
+            return drawObjectItr->first;
         }
 
         void GraphicsManager::removeDrawObject(unsigned long id)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns == nullptr) return;
-            DrawObject *drawObject = ns->object();
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr) 
+            {
+                return;
+            }
+
+            auto* const drawObject = ns->object();
             if (drawObject)
             {
                 drawObject->hide();
@@ -1177,85 +1178,105 @@ namespace mars
         void GraphicsManager::exportDrawObject(unsigned long id,
                                                const std::string &name) const
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns == nullptr) return;
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
             ns->object()->exportModel(name);
         }
 
         void GraphicsManager::removeLayerFromDrawObjects(unsigned long window_id)
         {
-            DrawObjects::iterator iter;
             unsigned int bit = 1 << (window_id-1);
 
-            for (iter = drawObjects_.begin(); iter != drawObjects_.end(); iter++)
+            for(auto drawObject: drawObjects_)
             {
-                iter->second->object()->removeBits(bit);
+                drawObject.second->object()->removeBits(bit);
             }
         }
 
         void GraphicsManager::setDrawObjectSelected(unsigned long id, bool val)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns == nullptr) return;
-
-            std::vector<GraphicsEventClient*>::iterator jter;
-            DrawObjectList::iterator drawit;
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
 
             ns->object()->setSelected(val);
 
             if(!val)
             {
-                for(drawit=selectedObjects_.begin(); drawit!=selectedObjects_.end();
-                    ++drawit)
+                auto selectedObjectItr = std::find_if(std::begin(selectedObjects_), std::end(selectedObjects_), [ns](const osg::ref_ptr<OSGNodeStruct>& x) { return x.get() == ns; });
+                if (selectedObjectItr != std::end(selectedObjects_))
                 {
-                    if(drawit->get() == ns)
-                    {
-                        selectedObjects_.erase(drawit);
-                        break;
-                    }
+                    selectedObjects_.erase(selectedObjectItr);
                 }
             }
 
-            for(jter=graphicsEventClientList.begin();
-                jter!=graphicsEventClientList.end();
-                ++jter)
+            for(auto graphicsEventClient: graphicsEventClientList)
             {
-                (*jter)->selectEvent(findCoreObject(id), val);
+                graphicsEventClient->selectEvent(findCoreObject(id), val);
             }
         }
 
         void GraphicsManager::setDrawObjectPos(unsigned long id, const Vector &pos)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != nullptr) ns->object()->setPosition(pos);
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr) 
+            {
+                return;
+            }
+
+            ns->object()->setPosition(pos);
         }
 
         void GraphicsManager::setDrawObjectRot(unsigned long id, const Quaternion &q)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != nullptr) ns->object()->setQuaternion(q);
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
+
+            ns->object()->setQuaternion(q);
         }
 
         void GraphicsManager::setDrawObjectScale(unsigned long id, const Vector &scale)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != nullptr) ns->object()->setScale(scale);
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
+
+            ns->object()->setScale(scale);
         }
 
         void GraphicsManager::setDrawObjectScaledSize(unsigned long id, const Vector &ext)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != nullptr) ns->object()->setScaledSize(ext);
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
+
+            ns->object()->setScaledSize(ext);
         }
 
         void GraphicsManager::setDrawObjectMaterial(unsigned long id,
                                                     const mars::interfaces::MaterialData &material)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(!ns) return;
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
+
             if(materialManager)
             {
-                mars::interfaces::MaterialData m = material;
+                auto m = material;
                 configmaps::ConfigMap map;
                 m.toConfigMap(&map);
                 // the material is not overridden if it already exists
@@ -1266,14 +1287,16 @@ namespace mars
 
         std::vector<interfaces::MaterialData> GraphicsManager::getMaterialList() const
         {
+            if(!materialManager)
+            {
+                return std::vector<interfaces::MaterialData>{};
+            }
+
             std::vector<interfaces::MaterialData> materialList;
-            if(!materialManager) return materialList;
-            std::vector<ConfigMap> materials = materialManager->getMaterialList();
-            std::vector<ConfigMap>::iterator it = materials.begin();
-            for(; it!=materials.end(); ++it)
+            for(auto& materialConfig: materialManager->getMaterialList())
             {
                 interfaces::MaterialData md;
-                md.fromConfigMap(&(*it), "");
+                md.fromConfigMap(&materialConfig, "");
                 materialList.push_back(md);
             }
             return materialList;
@@ -1283,21 +1306,34 @@ namespace mars
                                            std::string key,
                                            std::string value)
         {
+            if(!materialManager)
+            {
+                return;
+            }
 
-            if(!materialManager) return;
             materialManager->editMaterial(materialName, key, value);
         }
 
         void GraphicsManager::setDrawObjectNodeMask(unsigned long id, unsigned int bits)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != nullptr) ns->object()->setBits(bits);
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
+
+            ns->object()->setBits(bits);
         }
 
         void GraphicsManager::setDrawObjectBrightness(unsigned long id, double v)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != nullptr) ns->object()->setBrightness(v);
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
+
+            ns->object()->setBrightness(v);
         }
 
         void GraphicsManager::setBlending(unsigned long id, bool mode)
@@ -1314,31 +1350,43 @@ namespace mars
 
         void GraphicsManager::setSelectable(unsigned long id, bool val)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != nullptr) ns->object()->setSelectable(val);
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
+
+            ns->object()->setSelectable(val);
         }
 
         void GraphicsManager::setDrawObjectRBN(unsigned long id, int val)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != nullptr) ns->object()->setRenderBinNumber(val);
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
+
+            ns->object()->setRenderBinNumber(val);
         }
 
         void GraphicsManager::setDrawObjectShow(unsigned long id, bool val)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns != nullptr)
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
             {
-                if(val)
-                {
-                    ns->object()->show();
-                    //shadowedScene->addChild(ns->object()->getPosTransform());
-                } else
-                {
-                    ns->object()->hide();
-                    scene->removeChild(ns->object()->getPosTransform());
-                    shadowedScene->removeChild(ns->object()->getPosTransform());
-                }
+                return;
+            }
+
+            if(val)
+            {
+                ns->object()->show();
+                //shadowedScene->addChild(ns->object()->getPosTransform());
+            } else
+            {
+                ns->object()->hide();
+                scene->removeChild(ns->object()->getPosTransform());
+                shadowedScene->removeChild(ns->object()->getPosTransform());
             }
         }
 
@@ -1358,31 +1406,28 @@ namespace mars
 
         void GraphicsManager::removeDrawItems(DrawInterface *iface)
         {
-            vector<drawMapper>::iterator it;
-
-            for(it=draws.begin(); it!=draws.end(); it++)
+            auto drawMapperItr = std::find_if(  std::begin(draws), std::end(draws), 
+                                                [iface](const drawMapper& x) { return x.ds.ptr_draw == iface; });
+            if (drawMapperItr == std::end(draws))
             {
-                if(it->ds.ptr_draw!=iface) continue;
-
-                for(vector<osg::Node*>::iterator jt = it->nodes.begin();
-                    jt != it->nodes.end(); ++jt)
-                {
-                    scene->removeChild(*jt);
-                }
-                it->nodes.clear();
-                it->ds.drawItems.clear();
-                draws.erase(it);
-                break;
+                return;
             }
+
+            for(auto& osgNode: drawMapperItr->nodes)
+            {
+                scene->removeChild(osgNode);
+            }
+            drawMapperItr->nodes.clear();
+            drawMapperItr->ds.drawItems.clear();
+            draws.erase(drawMapperItr);
         }
 
         void GraphicsManager::clearDrawItems(void)
         {
             //clear the list of draw items
-            for(vector<drawMapper>::iterator it = draws.begin();
-                it != draws.end(); it = draws.begin())
+            for(const auto& drawMapper: draws)
             {
-                removeDrawItems(it->ds.ptr_draw);
+                removeDrawItems(drawMapper.ds.ptr_draw);
             }
             draws.clear();
         }
@@ -1395,7 +1440,7 @@ namespace mars
             unsigned int lightIndex = 0;
 
             // find a light unit, OpenGL has 8 available in fixed function pipeline
-            for (unsigned int i =0; i<myLights.size(); i++)
+            for (size_t i =0; i<myLights.size(); i++)
             {
                 if (myLights[i].free)
                 {
@@ -1408,13 +1453,11 @@ namespace mars
             if (freeOne)
             {
                 lightmanager lm;
-                vector<mars::interfaces::LightData*> lightList;
-                map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::iterator iter;
 
                 // set the free index
                 ls.index = lightIndex;
 
-                osg::ref_ptr<osg::LightSource> myLightSource = new OSGLightStruct(ls);
+                auto myLightSource = osg::ref_ptr<osg::LightSource>{new OSGLightStruct{ls}};
 
                 //add to lightmanager for later editing possibility
                 lm.light = myLightSource->getLight();
@@ -1424,7 +1467,7 @@ namespace mars
                 lm.free = false;
                 if(ls.map.find("produceShadow") != ls.map.end())
                 {
-                    if((bool)ls.map["produceShadow"])
+                    if(static_cast<bool>(ls.map["produceShadow"]))
                     {
                         if(shadowMap.valid())
                         {
@@ -1438,17 +1481,16 @@ namespace mars
                 }
                 if(ls.map.hasKey("nodeName"))
                 {
-                    // todo: if we don't find the node name the camera should ask for
+                    // TODO: if we don't find the node name the camera should ask for
                     // it on update
                     lm.lStruct.node << ls.map["nodeName"];
-                    map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::iterator it;
-                    for(it=drawObjects_.begin(); it!=drawObjects_.end(); ++it)
+                    const auto& nodeName = lm.lStruct.node;
+                    auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
+                                                        [&nodeName](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x) 
+                                                        { return x.second->name() == nodeName; });
+                    if (drawObjectItr != std::end(drawObjects_))
                     {
-                        if(it->second->name() == lm.lStruct.node)
-                        {
-                            lm.lStruct.drawID = it->first;
-                            break;
-                        }
+                        lm.lStruct.drawID = drawObjectItr->first;
                     }
                 }
                 lightGroup->addChild( myLightSource.get() );
@@ -1456,14 +1498,9 @@ namespace mars
                 myLightSource->setStateSetModes(*globalStateset, osg::StateAttribute::ON);
 
                 myLights[lm.lStruct.index] = lm;
-
-                // light changed for every draw object
-                //getLights(&lightList);
-                //for(iter=drawObjects_.begin(); iter!=drawObjects_.end(); ++iter)
-                //  iter->second->object()->updateShader(lightList, true);
             }
 
-            //else make a message (should be handled in another way, will be done later)
+            // TODO else make a message (should be handled in another way, will be done later)
             else
             {
                 cerr << "Light couldn't be added: No free lights available" << endl;
@@ -1475,9 +1512,6 @@ namespace mars
         {
             if (index < myLights.size() && !myLights[index].free)
             {
-                vector<mars::interfaces::LightData*> lightList;
-                map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::iterator iter;
-
                 globalStateset->setMode(GL_LIGHT0+index, osg::StateAttribute::OFF);
                 lightGroup->removeChild(myLights[index].lightSource.get());
 
@@ -1485,13 +1519,14 @@ namespace mars
                 temp.free = true;
                 myLights[index] = temp;
 
+                vector<mars::interfaces::LightData*> lightList;
                 getLights(&lightList);
                 if(lightList.size() == 0)
                 {
                     lightGroup->addChild(defaultLight.lightSource.get());
                     lightList.push_back(&defaultLight.lStruct);
                 }
-                // todo: do we have to remove the light from the shadow implementation?
+                // TODO: do we have to remove the light from the shadow implementation?
                 //for(iter=drawObjects_.begin(); iter!=drawObjects_.end(); ++iter)
                 //iter->second->object()->updateShader(lightList, true);
             }
@@ -1501,10 +1536,22 @@ namespace mars
                                        const std::string &value)
         {
             double v = atof(value.c_str());
-            if(key[key.size()-1] == 'a') c->a = v;
-            else if(key[key.size()-1] == 'r') c->r = v;
-            else if(key[key.size()-1] == 'g') c->g = v;
-            else if(key[key.size()-1] == 'b') c->b = v;
+            if(key[key.size()-1] == 'a')
+            {
+                c->a = v;
+            }
+            else if(key[key.size()-1] == 'r')
+            {
+                c->r = v;
+            }
+            else if(key[key.size()-1] == 'g')
+            {
+                c->g = v;
+            }
+            else if(key[key.size()-1] == 'b')
+            {
+                c->b = v;
+            }
         }
 
         void GraphicsManager::editLight(unsigned long id, const std::string &key,
@@ -1517,65 +1564,80 @@ namespace mars
                     if(utils::matchPattern("*/ambient/*", key))
                     {
                         setColor(&(myLights[i].lStruct.ambient), key, value);
-                    } else if(utils::matchPattern("*/diffuse/*", key))
+                    }
+                    else if(utils::matchPattern("*/diffuse/*", key))
                     {
                         setColor(&(myLights[i].lStruct.diffuse), key, value);
-                    } else if(utils::matchPattern("*/specular/*", key))
+                    }
+                    else if(utils::matchPattern("*/specular/*", key))
                     {
                         setColor(&(myLights[i].lStruct.specular), key, value);
-                    } else if(utils::matchPattern("*/position/x", key))
+                    }
+                    else if(utils::matchPattern("*/position/x", key))
                     {
                         myLights[i].lStruct.pos.x() = atof(value.c_str());
-                    } else if(utils::matchPattern("*/position/y", key))
+                    }
+                    else if(utils::matchPattern("*/position/y", key))
                     {
                         myLights[i].lStruct.pos.y() = atof(value.c_str());
-                    } else if(utils::matchPattern("*/position/z", key))
+                    }
+                    else if(utils::matchPattern("*/position/z", key))
                     {
                         myLights[i].lStruct.pos.z() = atof(value.c_str());
-                    } else if(utils::matchPattern("*/lookat/x", key))
+                    }
+                    else if(utils::matchPattern("*/lookat/x", key))
                     {
                         myLights[i].lStruct.lookAt.x() = atof(value.c_str());
-                    } else if(utils::matchPattern("*/lookat/y", key))
+                    }
+                    else if(utils::matchPattern("*/lookat/y", key))
                     {
                         myLights[i].lStruct.lookAt.y() = atof(value.c_str());
-                    } else if(utils::matchPattern("*/lookat/z", key))
+                    }
+                    else if(utils::matchPattern("*/lookat/z", key))
                     {
                         myLights[i].lStruct.lookAt.z() = atof(value.c_str());
-                    } else if(utils::matchPattern("*/constantAttenuation", key))
+                    }
+                    else if(utils::matchPattern("*/constantAttenuation", key))
                     {
                         myLights[i].lStruct.constantAttenuation = atof(value.c_str());
-                    } else if(utils::matchPattern("*/linearAttenuation", key))
+                    }
+                    else if(utils::matchPattern("*/linearAttenuation", key))
                     {
                         myLights[i].lStruct.linearAttenuation = atof(value.c_str());
-                    } else if(utils::matchPattern("*/quadraticAttenuation", key))
+                    }
+                    else if(utils::matchPattern("*/quadraticAttenuation", key))
                     {
                         myLights[i].lStruct.quadraticAttenuation = atof(value.c_str());
-                    } else if(utils::matchPattern("*/type", key))
+                    }
+                    else if(utils::matchPattern("*/type", key))
                     {
                         myLights[i].lStruct.type = atoi(value.c_str());
-                    } else if(utils::matchPattern("*/angle", key))
+                    }
+                    else if(utils::matchPattern("*/angle", key))
                     {
                         myLights[i].lStruct.angle = atof(value.c_str());
-                    } else if(utils::matchPattern("*/exponent", key))
+                    }
+                    else if(utils::matchPattern("*/exponent", key))
                     {
                         myLights[i].lStruct.exponent = atof(value.c_str());
-                    } else if(utils::matchPattern("*/directional", key))
+                    }
+                    else if(utils::matchPattern("*/directional", key))
                     {
                         ConfigItem b;
                         b = value;
                         myLights[i].lStruct.directional << b;
                         fprintf(stderr, "directional: %d", myLights[i].lStruct.directional);
-                    } else if(utils::matchPattern("*/nodeName", key))
+                    }
+                    else if(utils::matchPattern("*/nodeName", key))
                     {
                         myLights[i].lStruct.node = value;
-                        map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::iterator it;
-                        for(it=drawObjects_.begin(); it!=drawObjects_.end(); ++it)
+                        auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
+                                                            [&value](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x) 
+                                                            { return x.second->name() == value; });
+                        if (drawObjectItr != std::end(drawObjects_))
                         {
-                            if(it->second->name() == value)
-                            {
-                                myLights[i].lStruct.drawID = it->first;
-                                break;
-                            }
+                            myLights[i].lStruct.drawID = drawObjectItr->first;
+                            break;
                         }
                     }
                     updateLight(i);
@@ -1586,13 +1648,14 @@ namespace mars
 
         void GraphicsManager::updateLight(unsigned int i, bool recompileShader)
         {
-            OSGLightStruct *osgLight = dynamic_cast<OSGLightStruct*>(myLights[i].lightSource.get());
-            if(osgLight != nullptr)
+            auto* const osgLight = dynamic_cast<OSGLightStruct*>(myLights[i].lightSource.get());
+            if(osgLight == nullptr)
             {
-                osgLight->update(myLights[i].lStruct);
-            }
-            else
                 fprintf(stderr, "GraphicsManager::updateLight -> no Light %u\n", i);
+                return;
+            }
+
+            osgLight->update(myLights[i].lStruct);
             /*
               if(recompileShader) {
               vector<mars::interfaces::LightData*> lightList;
@@ -1607,7 +1670,7 @@ namespace mars
         void GraphicsManager::getLights(vector<mars::interfaces::LightData*> *lightList)
         {
             lightList->clear();
-            for (unsigned int i=0; i<myLights.size(); i++)
+            for (size_t i=0; i<myLights.size(); ++i)
             {
                 //return only the used lights
                 if (!myLights[i].free)
@@ -1620,7 +1683,7 @@ namespace mars
         void GraphicsManager::getLights(vector<mars::interfaces::LightData> *lightList) const
         {
             lightList->clear();
-            for(unsigned int i=0; i<myLights.size(); i++)
+            for(size_t i=0; i<myLights.size(); ++i)
             {
                 //return only the used lights
                 if(!myLights[i].free)
@@ -1632,11 +1695,17 @@ namespace mars
 
         int GraphicsManager::getLightCount() const
         {
+            assert(myLights.size() < static_cast<size_t>(std::numeric_limits<int>::max()));
+
             // count used lights only
             int size = 0;
-            for(unsigned int i=0; i<myLights.size(); i++)
+            for(size_t i=0; i<myLights.size(); i++)
+            {
                 if(!myLights[i].free)
+                {
                     size++;
+                }
+            }
             return size;
         }
 
@@ -1649,9 +1718,13 @@ namespace mars
         {
             (void) pos;
             if(positionedCoords.get()!=nullptr)
+            {
                 transformCoords->removeChild(positionedCoords.get());
+            }
             if(transformCoords.get()!=nullptr)
+            {
                 scene->removeChild(transformCoords.get());
+            }
         }
 
         /** removes the main coordination frame from the scene */
@@ -1665,18 +1738,15 @@ namespace mars
         void GraphicsManager::showCoords(const Vector &pos, const Quaternion &rot,
                                          const Vector &size)
         {
-
             hideCoords(pos);
 
             string resPath = resources_path.sValue;
 
-            positionedCoords = new CoordsPrimitive(osgWidget, size, resPath, true);
-            transformCoords = new osg::PositionAttitudeTransform();
+            positionedCoords = new CoordsPrimitive{osgWidget, size, resPath, true};
+            transformCoords = new osg::PositionAttitudeTransform{};
             transformCoords->addChild(positionedCoords.get());
-            osg::Quat oquat;
-            oquat.set( rot.x(),  rot.y(),  rot.z() , rot.w());
-            transformCoords->setAttitude(oquat);
-            transformCoords->setPosition(osg::Vec3(pos.x(),pos.y(),pos.z()));
+            transformCoords->setAttitude(osg::Quat{rot.x(), rot.y(), rot.z(), rot.w()});
+            transformCoords->setPosition(osg::Vec3{pos.x(), pos.y(), pos.z()});
             scene->addChild(transformCoords.get());
 
             show_coords = true;
@@ -1725,13 +1795,19 @@ namespace mars
 
         void GraphicsManager::showGrid(void)
         {
-            if(!show_grid) scene->addChild(grid.get());
+            if(!show_grid)
+            {
+                scene->addChild(grid.get());
+            }
             show_grid = true;
         }
 
         void GraphicsManager::hideGrid(void)
         {
-            if(show_grid) scene->removeChild(grid.get());
+            if(show_grid)
+            {
+                scene->removeChild(grid.get());
+            }
             show_grid = false;
         }
 
@@ -1756,18 +1832,16 @@ namespace mars
 
             if(allNodes[0].filename=="PRIMITIVE")
             {
-                osg::ref_ptr<OSGNodeStruct> drawObject = new OSGNodeStruct(this,
-                                                                           allNodes[0], true, nextPreviewID);
+                auto drawObject = osg::ref_ptr<OSGNodeStruct>{new OSGNodeStruct{this, allNodes[0], true, nextPreviewID}};
                 previewNodes_[nextPreviewID] = drawObject;
                 scene->addChild(drawObject->object()->getPosTransform());
-            } else
+            }
+            else
             {
-                unsigned int i=0;
-                for(DrawObjects::iterator it = previewNodes_.begin();
-                    it != previewNodes_.end(); ++it)
+                // TODO: Explain what is happening here.
+                for(size_t i=1; i<=previewNodes_.size();++i)
                 {
-                    osg::ref_ptr<OSGNodeStruct> drawObject = new OSGNodeStruct(this,
-                                                                               allNodes[++i], true, nextPreviewID);
+                    auto drawObject = osg::ref_ptr<OSGNodeStruct>{new OSGNodeStruct{this, allNodes[i], true, nextPreviewID}};
                     previewNodes_[nextPreviewID] = drawObject;
                     scene->addChild(drawObject->object()->getPosTransform());
                 }
@@ -1777,8 +1851,12 @@ namespace mars
 
         void GraphicsManager::removePreviewNode(unsigned long id)
         {
-            map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::iterator needle = previewNodes_.find(id);
-            if(needle == previewNodes_.end()) return;
+            auto needle = previewNodes_.find(id);
+            if(needle == std::end(previewNodes_))
+            {
+                return;
+            }
+
             scene->removeChild(needle->second->object()->getTransform().get());
             previewNodes_.erase(needle);
         }
@@ -1791,48 +1869,42 @@ namespace mars
                                       unsigned int num,
                                       const mars::interfaces::MaterialData *mat)
         {
-
-            osg::ref_ptr<osg::Material> material = new osg::Material;
             switch (action)
             {
-            case mars::interfaces::PREVIEW_CREATE:
-                createPreviewNode(allNodes);
-                break;
-            case mars::interfaces::PREVIEW_EDIT:
-            {
-                unsigned int i=0;
-                for(DrawObjects::iterator it = previewNodes_.begin();
-                    it != previewNodes_.end(); ++it)
+                case mars::interfaces::PREVIEW_CREATE:
+                    createPreviewNode(allNodes);
+                    break;
+                case mars::interfaces::PREVIEW_EDIT:
                 {
-                    it->second->edit(allNodes[++i], resize);
-                }
-                break;
-            }
-            case mars::interfaces::PREVIEW_CLOSE:
-                for(DrawObjects::iterator it = previewNodes_.begin();
-                    it != previewNodes_.end(); ++it)
-                {
-                    scene->removeChild(it->second->object()->getTransform().get());
-                }
-                previewNodes_.clear();
-                break;
-            case mars::interfaces::PREVIEW_COLOR:
-                for(DrawObjects::iterator it = previewNodes_.begin();
-                    it != previewNodes_.end(); ++it)
-                {
-                    if (mat == nullptr)
+                    size_t i=0;
+                    for(auto& previewNode: previewNodes_)
                     {
-                        throw std::runtime_error("ERROR: Got null-pointer in "
-                                                 "GraphicsManager::preview(PREVIEW_COLOR)");
+                        previewNode.second->edit(allNodes[++i], resize);
                     }
-                    material = new OSGMaterialStruct(*mat);
-                    material->setTransparency(osg::Material::FRONT_AND_BACK, 0.8);
-                    it->second->getOrCreateStateSet()->setAttributeAndModes(material.get(),
-                                                                            osg::StateAttribute::ON);
+                    break;
                 }
-                break;
-            default:
-                break;
+                case mars::interfaces::PREVIEW_CLOSE:
+                    for(const auto& previewNode: previewNodes_)
+                    {
+                        scene->removeChild(previewNode.second->object()->getTransform().get());
+                    }
+                    previewNodes_.clear();
+                    break;
+                case mars::interfaces::PREVIEW_COLOR:
+                    for(auto& previewNode: previewNodes_)
+                    {
+                        if (mat == nullptr)
+                        {
+                            throw std::runtime_error{"ERROR: Got null-pointer in "
+                                                    "GraphicsManager::preview(PREVIEW_COLOR)"};
+                        }
+                        auto material = osg::ref_ptr<osg::Material>{new OSGMaterialStruct{*mat}};
+                        material->setTransparency(osg::Material::FRONT_AND_BACK, 0.8);
+                        previewNode.second->getOrCreateStateSet()->setAttributeAndModes(material.get(), osg::StateAttribute::ON);
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -1840,281 +1912,277 @@ namespace mars
 
         unsigned long GraphicsManager::addHUDElement(hudElementStruct *he)
         {
-            unsigned long id = next_hud_id++;
-            osg::ref_ptr<OSGHudElementStruct> elem = new OSGHudElementStruct(*he, resources_path.sValue, id);
-
-            if(elem)
+            const unsigned long id = next_hud_id++;
+            auto elem = osg::ref_ptr<OSGHudElementStruct>{new OSGHudElementStruct{*he, resources_path.sValue, id}};
+            if(!elem)
             {
-                hudElements.push_back(elem);
-                for(vector<GraphicsWidget*>::iterator iter = graphicsWindows.begin();
-                    iter!=graphicsWindows.end(); iter++)
-                {
-                    (*iter)->addHUDElement(elem->getHUDElement());
-                }
-                return id;
+                return 0;
             }
 
-            return 0;
+
+            hudElements.push_back(elem);
+            for(auto& graphicsWindow: graphicsWindows)
+            {
+                graphicsWindow->addHUDElement(elem->getHUDElement());
+            }
+            return id;
         }
 
         void GraphicsManager::removeHUDElement(unsigned long id)
         {
-            HUDElements::iterator iter;
-            HUDElement* elem = findHUDElement(id);
-
-            if(elem)
+            auto* const elem = findHUDElement(id);
+            if(!elem)
             {
-                for(vector<GraphicsWidget*>::iterator graphicsWidgetIterator = graphicsWindows.begin(); graphicsWidgetIterator!=graphicsWindows.end(); graphicsWidgetIterator++)
-                {
-                    (*graphicsWidgetIterator)->removeHUDElement(elem);
-                }
+                return;
+            }
 
-                for(iter = hudElements.begin(); iter != hudElements.end(); iter++)
-                {
-                    if((*iter)->getHUDElement() == elem)
-                    {
-                        hudElements.erase(iter);
-                        break;
-                    }
-                }
+            for(auto& graphicsWindow: graphicsWindows)
+            {
+                graphicsWindow->removeHUDElement(elem);
+            }
+
+            auto hudElementItr = std::find_if(  std::begin(hudElements), std::end(hudElements),
+                                                [&elem](const osg::ref_ptr<OSGHudElementStruct>& x) 
+                                                { return x->getHUDElement() == elem; });
+            if (hudElementItr != std::end(hudElements))
+            {
+                hudElements.erase(hudElementItr);
             }
         }
 
         unsigned long GraphicsManager::addHUDOSGNode(void* node)
         {
-            unsigned long id = next_hud_id++;
-            osg::ref_ptr<OSGHudElementStruct> elem;
-
+            const unsigned long id = next_hud_id++;
             hudElementStruct he;
             he.type = HUD_ELEMENT_OSGNODE;
-            elem = new OSGHudElementStruct(he, resources_path.sValue, id,
-                                           (osg::Node*)node);
-            if(elem)
+            auto elem = osg::ref_ptr<OSGHudElementStruct>{new OSGHudElementStruct{he, resources_path.sValue, id, static_cast<osg::Node*>(node)}};
+            if(!elem)
             {
-                hudElements.push_back(elem);
-                for (vector<GraphicsWidget*>::iterator iter = graphicsWindows.begin();
-                     iter!=graphicsWindows.end(); iter++)
-                {
-                    (*iter)->addHUDElement(elem->getHUDElement());
-                }
-                return id;
+                return 0;
             }
-
-            return 0;
+            
+            hudElements.push_back(elem);
+            for (auto& graphicsWindow: graphicsWindows)
+            {
+                graphicsWindow->addHUDElement(elem->getHUDElement());
+            }
+            return id;
         }
 
         HUDElement* GraphicsManager::findHUDElement(unsigned long id) const
         {
-            HUDElements::const_iterator iter;
-            //HUDTexture *elem;
-
-            for(iter = hudElements.begin(); iter != hudElements.end(); iter++)
+            auto hudElementItr = std::find_if(  std::begin(hudElements), std::end(hudElements), 
+                                                [&id](const osg::ref_ptr<OSGHudElementStruct>& x) 
+                                                { return x->getHUDElement()->getID() == id; });
+            if (hudElementItr == std::end(hudElements))
             {
-                if((*iter)->getHUDElement()->getID() == id)
-                {
-                    return (*iter)->getHUDElement();
-                }
+                return nullptr;
             }
-            return nullptr;
+
+            return (*hudElementItr)->getHUDElement();
         }
 
         void GraphicsManager::switchHUDElementVis(unsigned long id)
         {
-            HUDTexture *elem = (HUDTexture*) findHUDElement(id);
-            if(elem!=nullptr)
+            auto* const elem = dynamic_cast<HUDTexture*>(findHUDElement(id));
+            if(elem==nullptr)
             {
-                elem->switchCullMask();
+                return;
             }
+
+            elem->switchCullMask();
         }
 
-        void GraphicsManager::setHUDElementPos(unsigned long id, double x,
-                                               double y)
+        void GraphicsManager::setHUDElementPos(unsigned long id, double x, double y)
         {
-            HUDTexture *elem = (HUDTexture*) findHUDElement(id);
-            if(elem!=nullptr)
+            auto* const elem = dynamic_cast<HUDTexture*>(findHUDElement(id));
+            if(elem==nullptr)
             {
-                elem->setPos(x, y);
+                return;
             }
+
+            elem->setPos(x, y);
         }
 
         void GraphicsManager::setHUDElementTexture(unsigned long id,
                                                    std::string texturename)
         {
-            HUDTexture *elem = (HUDTexture*) findHUDElement(id);
-            if(elem!=nullptr)
+            auto* const elem = dynamic_cast<HUDTexture*>(findHUDElement(id));
+            if(elem==nullptr)
             {
-                elem->setTexture(GuiHelper::loadTexture(texturename).get());
+                return;
             }
+
+            elem->setTexture(GuiHelper::loadTexture(texturename).get());
         }
 
         void GraphicsManager::setHUDElementTextureData(unsigned long id,
                                                        void* data)
         {
-            HUDTexture *elem = dynamic_cast<HUDTexture*>(findHUDElement(id));
-            if(elem!=nullptr)
+            auto* const elem = dynamic_cast<HUDTexture*>(findHUDElement(id));
+            if(elem==nullptr)
             {
-                elem->setImageData(data);
+                return;
             }
+
+            elem->setImageData(data);
         }
 
         void GraphicsManager::setHUDElementTextureRTT(unsigned long id,
                                                       unsigned long window_id,
                                                       bool depthComponent)
         {
-            HUDTexture *elem = (HUDTexture*) findHUDElement(id);
-            std::vector<GraphicsWidget*>::iterator jter;
-
-            for(jter=graphicsWindows.begin(); jter!=graphicsWindows.end(); jter++)
+            auto* const elem = dynamic_cast<HUDTexture*>(findHUDElement(id));
+            if(elem==nullptr)
             {
-                if((*jter)->getID() == window_id)
-                {
-                    if(elem!=nullptr)
-                    {
-                        if(depthComponent)
-                            elem->setTexture((*jter)->getRTTDepthTexture());
-                        else
-                            elem->setTexture((*jter)->getRTTTexture());
-                    }
-                    break;
-                }
+                return;
             }
+
+            auto graphicsWindowItr = std::find_if(std::begin(graphicsWindows), std::end(graphicsWindows),
+                                                    [window_id](GraphicsWidget* const x) { return x->getID() == window_id; });
+            if(graphicsWindowItr == std::end(graphicsWindows))
+            {
+                return;
+            }
+
+            elem->setTexture(depthComponent ? (*graphicsWindowItr)->getRTTDepthTexture() : (*graphicsWindowItr)->getRTTTexture());
         }
 
         void GraphicsManager::setHUDElementLabel(unsigned long id,
                                                  std::string text,
                                                  double text_color[4])
         {
-            HUDLabel *elem = (HUDLabel*) findHUDElement(id);
-            if(elem!=nullptr) elem->setText(text, text_color);
+            auto* const elem = dynamic_cast<HUDLabel*>(findHUDElement(id));
+            if(elem==nullptr)
+            {
+                return;
+            }
+
+            elem->setText(text, text_color);
         }
 
         void GraphicsManager::setHUDElementLines(unsigned long id,
                                                  std::vector<double> *v,
                                                  double color[4])
         {
-            HUDLines *elem = (HUDLines*) findHUDElement(id);
-            if(elem!=nullptr) elem->setLines(v, color);
+            auto* const elem = dynamic_cast<HUDLines*>(findHUDElement(id));
+            if(elem==nullptr)
+            {
+                return;
+            }
+
+            elem->setLines(v, color);
         }
 
         ////// EVENTS
 
         void GraphicsManager::addGuiEventHandler(GuiEventInterface *_guiEventHandler)
         {
-            std::vector<GuiEventInterface*>::iterator iter;
-            bool found = false;
+            auto guiHandlerItr = std::find(std::begin(guiHandlerList), std::end(guiHandlerList), _guiEventHandler);
+            if (guiHandlerItr != std::end(guiHandlerList))
+            {
+                // nothing to add - already in list
+                return;
+            }
 
-            for(iter = guiHandlerList.begin(); iter != guiHandlerList.end(); ++iter)
-            {
-                if((*iter) == _guiEventHandler)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if(!found)
-            {
-                guiHandlerList.push_back(_guiEventHandler);
-            }
+            guiHandlerList.push_back(_guiEventHandler);
         }
 
         void GraphicsManager::removeGuiEventHandler(GuiEventInterface *_guiEventHandler)
         {
-            std::vector<GuiEventInterface*>::iterator iter;
-
-            for(iter = guiHandlerList.begin(); iter != guiHandlerList.end(); ++iter)
+            auto guiHandlerItr = std::find(std::begin(guiHandlerList), std::end(guiHandlerList), _guiEventHandler);
+            if (guiHandlerItr == std::end(guiHandlerList))
             {
-                if((*iter) == _guiEventHandler)
-                {
-                    guiHandlerList.erase(iter);
-                    break;
-                }
+                return;
             }
+
+            guiHandlerList.erase(guiHandlerItr);
         }
 
         void GraphicsManager::emitKeyDownEvent(int key, unsigned int modKey,
                                                unsigned long win_id)
         {
-            std::vector<GuiEventInterface*>::iterator iter;
-
-            for(iter=guiHandlerList.begin(); iter!=guiHandlerList.end(); ++iter)
+            for(auto& guiHandler: guiHandlerList)
             {
-                (*iter)->keyDownEvent(key, modKey, win_id);
+                guiHandler->keyDownEvent(key, modKey, win_id);
             }
         }
 
         void GraphicsManager::emitKeyUpEvent(int key, unsigned int modKey,
                                              unsigned long win_id)
         {
-            std::vector<GuiEventInterface*>::iterator iter;
-
-            for(iter=guiHandlerList.begin(); iter!=guiHandlerList.end(); ++iter)
+            for(auto& guiHandler: guiHandlerList)
             {
-                (*iter)->keyUpEvent(key, modKey, win_id);
+                guiHandler->keyUpEvent(key, modKey, win_id);
             }
         }
 
         void GraphicsManager::emitQuitEvent(unsigned long win_id)
         {
-            if(win_id < 1) return;
-
-            std::vector<GuiEventInterface*>::iterator iter;
-
-            for(iter=guiHandlerList.begin(); iter!=guiHandlerList.end(); ++iter)
+            if(win_id < 1)
             {
-                (*iter)->quitEvent(win_id);
+                return;
+            }
+
+            for(auto& guiHandler: guiHandlerList)
+            {
+                guiHandler->quitEvent(win_id);
             }
         }
 
         void GraphicsManager::emitSetAppActive(unsigned long win_id)
         {
-            if(win_id < 1) return;
-
-            std::vector<GuiEventInterface*>::iterator iter;
-
-            for(iter=guiHandlerList.begin(); iter!=guiHandlerList.end(); ++iter)
+            if(win_id < 1)
             {
-                (*iter)->setAppActive(win_id);
+                return;
+            }
+
+            for(auto& guiHandler: guiHandlerList)
+            {
+                guiHandler->setAppActive(win_id);
             }
         }
 
         void GraphicsManager::addEventClient(GraphicsEventClient* theClient)
         {
-            std::vector<GraphicsEventClient*>::iterator iter;
-
-            for(iter=graphicsEventClientList.begin();
-                iter!=graphicsEventClientList.end();
-                ++iter)
+            auto eventClientItr = std::find(std::begin(graphicsEventClientList), std::end(graphicsEventClientList), theClient);
+            if (eventClientItr != std::end(graphicsEventClientList))
             {
-                if(*iter == theClient) return;
+                // already in list - nothing to add
+                return;
             }
+
             graphicsEventClientList.push_back(theClient);
         }
 
         void GraphicsManager::removeEventClient(GraphicsEventClient* theClient)
         {
-            std::vector<GraphicsEventClient*>::iterator iter;
-
-            for(iter=graphicsEventClientList.begin();
-                iter!=graphicsEventClientList.end();
-                ++iter)
+            auto eventClientItr = std::find(std::begin(graphicsEventClientList), std::end(graphicsEventClientList), theClient);
+            if (eventClientItr == std::end(graphicsEventClientList))
             {
-                if(*iter == theClient)
-                {
-                    graphicsEventClientList.erase(iter);
-                    return;
-                }
+                return;
             }
+
+            graphicsEventClientList.erase(eventClientItr);
         }
 
         void GraphicsManager::emitNodeSelectionChange(unsigned long win_id, int mode)
         {
-            if(win_id < 1 || mode == 0) return;
+            // TODO: Refactor this method
+            if(win_id < 1 || mode == 0)
+            {
+                return;
+            }
+
             std::vector<GraphicsEventClient*>::iterator jter;
 
             GraphicsWidget* gw = getGraphicsWindow(win_id);
 
             std::vector<osg::Node*> selectednodes = gw->getPickedObjects();
-            if(selectednodes.empty()) return;
+            if(selectednodes.empty())
+            {
+                return;
+            }
 
             DrawObjectList::iterator drawListIt;
             DrawObjects::iterator drawIt;
@@ -2258,11 +2326,10 @@ namespace mars
 
         void GraphicsManager::showNormals(bool val)
         {
-            map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::iterator iter;
-
-            for(iter=drawObjects_.begin(); iter!=drawObjects_.end(); ++iter)
-                iter->second->object()->showNormals(val);
-
+            for(auto& drawObject: drawObjects_)
+            {
+                drawObject.second->object()->showNormals(val);
+            }
         }
 
         void GraphicsManager::showRain(bool val)
@@ -2270,11 +2337,12 @@ namespace mars
             if(val)
             {
                 rain = new osgParticle::PrecipitationEffect;
-                rain->setWind(osg::Vec3(1, 0, 0));
+                rain->setWind(osg::Vec3{1, 0, 0});
                 rain->setParticleSpeed(0.4);
                 rain->rain(0.6); // alternatively, use rain
                 scene->addChild(rain.get());
-            } else
+            }
+            else
             {
                 scene->removeChild(rain.get());
             }
@@ -2285,11 +2353,12 @@ namespace mars
             if(val)
             {
                 snow = new osgParticle::PrecipitationEffect;
-                snow->setWind(osg::Vec3(1, 0, 0));
+                snow->setWind(osg::Vec3{1, 0, 0});
                 snow->setParticleSpeed(0.4);
                 snow->snow(0.4); // alternatively, use rain
                 scene->addChild(snow.get());
-            } else
+            }
+            else
             {
                 scene->removeChild(snow.get());
             }
@@ -2297,7 +2366,7 @@ namespace mars
 
         void GraphicsManager::setupCFG(void)
         {
-            cfg_manager::CFGClient* cfgClient = dynamic_cast<cfg_manager::CFGClient*>(this);
+            auto* const cfgClient = static_cast<cfg_manager::CFGClient*>(this);
             cfgW_top = cfg->getOrCreateProperty("Graphics", "window1Top", (int)40,
                                                 cfgClient);
 
@@ -2344,9 +2413,18 @@ namespace mars
 
             setGraphicsWindowGeometry(1, cfgW_top.iValue, cfgW_left.iValue,
                                       cfgW_width.iValue, cfgW_height.iValue);
-            if(drawRain.bValue) showRain(true);
-            if(drawSnow.bValue) showSnow(true);
-            if(showFramesProp.bValue) showFrames(true);
+            if(drawRain.bValue)
+            {
+                showRain(true);
+            }
+            if(drawSnow.bValue)
+            {
+                showSnow(true);
+            }
+            if(showFramesProp.bValue)
+            {
+                showFrames(true);
+            }
             scaleFrames(scaleFramesProp.dValue);
             if(!drawMainCamera.bValue)
             {
@@ -2359,21 +2437,27 @@ namespace mars
         {
             bool change_view = 0;
 
-            if(set_window_prop) return;
+            if(set_window_prop)
+            {
+                return;
+            }
 
             if(_property.paramId == cfgW_top.paramId)
             {
                 cfgW_top.iValue = _property.iValue;
                 change_view = 1;
-            } else if(_property.paramId == cfgW_left.paramId)
+            }
+            else if(_property.paramId == cfgW_left.paramId)
             {
                 cfgW_left.iValue = _property.iValue;
                 change_view = 1;
-            } else if(_property.paramId == cfgW_width.paramId)
+            }
+            else if(_property.paramId == cfgW_width.paramId)
             {
                 cfgW_width.iValue = _property.iValue;
                 change_view = 1;
-            } else if(_property.paramId == cfgW_height.paramId)
+            }
+            else if(_property.paramId == cfgW_height.paramId)
             {
                 cfgW_height.iValue = _property.iValue;
                 change_view = 1;
@@ -2430,7 +2514,8 @@ namespace mars
                 if(drawMainCamera.bValue)
                 {
                     activate3DWindow(1);
-                } else
+                }
+                else
                 {
                     deactivate3DWindow(1);
                 }
@@ -2494,9 +2579,13 @@ namespace mars
             if(_property.paramId == backfaceCulling.paramId)
             {
                 if((backfaceCulling.bValue = _property.bValue))
+                {
                     globalStateset->setAttributeAndModes(cull, osg::StateAttribute::ON);
+                }
                 else
+                {
                     globalStateset->setAttributeAndModes(cull, osg::StateAttribute::OFF);
+                }
                 return;
             }
 
@@ -2509,26 +2598,36 @@ namespace mars
             if(_property.paramId == showGridProp.paramId)
             {
                 showGridProp.bValue = _property.bValue;
-                if(showGridProp.bValue) showGrid();
-                else hideGrid();
+                if(showGridProp.bValue)
+                {
+                    showGrid();
+                }
+                else
+                {
+                    hideGrid();
+                }
                 return;
             }
 
             if(_property.paramId == showCoordsProp.paramId)
             {
                 showCoordsProp.bValue = _property.bValue;
-                if(showCoordsProp.bValue) showCoords();
-                else hideCoords();
+                if(showCoordsProp.bValue){
+                    showCoords();
+                }
+                else
+                {
+                    hideCoords();
+                }
                 return;
             }
 
             if(_property.paramId == showSelectionProp.paramId)
             {
                 showSelectionProp.bValue = _property.bValue;
-                map<unsigned long, osg::ref_ptr<OSGNodeStruct> >::iterator it;
-                for(it=drawObjects_.begin(); it!=drawObjects_.end(); ++it)
+                for(auto& drawObject: drawObjects_)
                 {
-                    it->second->object()->setShowSelected(showSelectionProp.bValue);
+                    drawObject.second->object()->setShowSelected(showSelectionProp.bValue);
                 }
                 return;
             }
@@ -2537,7 +2636,6 @@ namespace mars
         void GraphicsManager::emitGeometryChange(unsigned long win_id, int left,
                                                  int top, int width, int height)
         {
-
             bool update_cfg = false;
             if(win_id==1)
             {
@@ -2592,29 +2690,44 @@ namespace mars
 
         void GraphicsManager::setBrightness(double val)
         {
-            if(materialManager) materialManager->setBrightness(float(val));
+            if(materialManager)
+            {
+                materialManager->setBrightness(static_cast<float>(val));
+            }
         }
 
         void GraphicsManager::setNoiseAmmount(double val)
         {
-            if(materialManager) materialManager->setNoiseAmmount(float(val));
+            if(materialManager)
+            {
+                materialManager->setNoiseAmmount(static_cast<float>(val));
+            }
         }
 
         void GraphicsManager::setUseNoise(bool val)
         {
             useNoise = noiseProp.bValue = val;
-            if(materialManager) materialManager->setUseNoise(val);
+            if(materialManager)
+            {
+                materialManager->setUseNoise(val);
+            }
         }
 
         void GraphicsManager::setDrawLineLaser(bool val)
         {
             drawLineLaser = drawLineLaserProp.bValue = val;
-            if(materialManager) materialManager->setDrawLineLaser(val);
+            if(materialManager)
+            {
+                materialManager->setDrawLineLaser(val);
+            }
         }
 
         void GraphicsManager::setUseShader(bool val)
         {
-            if(materialManager) materialManager->setUseShader(val);
+            if(materialManager)
+            {
+                materialManager->setUseShader(val);
+            }
             if(val)
             {
                 if(shadowMap.valid())
@@ -2625,7 +2738,8 @@ namespace mars
                 {
                     pssm->addTexture(shadowStateset.get());
                 }
-            } else
+            }
+            else
             {
                 if(shadowMap.valid())
                 {
@@ -2656,10 +2770,10 @@ namespace mars
 
         void GraphicsManager::initDefaultLight()
         {
-            defaultLight.lStruct.pos = Vector(2.0, 2.0, 10.0);
-            defaultLight.lStruct.ambient = mars::utils::Color(0.5, 0.5, 0.5, 1.0);
-            defaultLight.lStruct.diffuse = mars::utils::Color(1., 1., 1., 1.0);
-            defaultLight.lStruct.specular = mars::utils::Color(1.0, 1.0, 1.0, 1.0);
+            defaultLight.lStruct.pos = Vector{2.0, 2.0, 10.0};
+            defaultLight.lStruct.ambient = mars::utils::Color{0.5, 0.5, 0.5, 1.0};
+            defaultLight.lStruct.diffuse = mars::utils::Color{1., 1., 1., 1.0};
+            defaultLight.lStruct.specular = mars::utils::Color{1.0, 1.0, 1.0, 1.0};
             defaultLight.lStruct.constantAttenuation = 1.0;
             defaultLight.lStruct.linearAttenuation = 0.0;
             defaultLight.lStruct.quadraticAttenuation = 0.00002;
@@ -2669,7 +2783,7 @@ namespace mars
             defaultLight.lStruct.angle = 0;
             defaultLight.lStruct.exponent = 0;
 
-            osg::ref_ptr<osg::LightSource> myLightSource = new OSGLightStruct(defaultLight.lStruct);
+            auto myLightSource = osg::ref_ptr<osg::LightSource>{new OSGLightStruct{defaultLight.lStruct}};
 
             //add to lightmanager for later editing possibility
             defaultLight.light = myLightSource->getLight();
@@ -2681,16 +2795,16 @@ namespace mars
             myLightSource->setStateSetModes(*globalStateset, osg::StateAttribute::ON);
         }
 
-        void*  GraphicsManager::getWindowManager(int id)
+        void* GraphicsManager::getWindowManager(int id)
         {
-            GraphicsWidget* gw=getGraphicsWindow(id);
-
+            auto* const gw = getGraphicsWindow(id);
             if(gw == nullptr)
             {
                 std::cerr<<"window does not exist!"<<std::endl;
                 return gw;
             }
-            return (void*) gw->getOrCreateWindowManager();
+
+            return static_cast<void*>(gw->getOrCreateWindowManager());
         }
 
         bool GraphicsManager::coordsVisible(void) const
@@ -2711,24 +2825,35 @@ namespace mars
         void GraphicsManager::collideSphere(unsigned long id, Vector pos,
                                             mars::interfaces::sReal radius)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            if(ns == nullptr) return;
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                return;
+            }
+
             ns->object()->collideSphere(pos, radius);
         }
 
         const Vector& GraphicsManager::getDrawObjectPosition(unsigned long id)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            static Vector dummy;
-            if(ns == nullptr) return dummy;
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                static Vector dummy;
+                return dummy;
+            }
+
             return ns->object()->getPosition();
         }
 
         const Quaternion& GraphicsManager::getDrawObjectQuaternion(unsigned long id)
         {
-            OSGNodeStruct *ns = findDrawObject(id);
-            static Quaternion dummy;
-            if(ns == nullptr) return dummy;
+            auto* const ns = findDrawObject(id);
+            if(ns == nullptr)
+            {
+                static Quaternion dummy;
+                return dummy;
+            }
             return ns->object()->getQuaternion();
         }
 
@@ -2745,12 +2870,15 @@ namespace mars
         void GraphicsManager::makeChild(unsigned long parentId,
                                         unsigned long childId)
         {
-            OSGNodeStruct *parent = findDrawObject(parentId);
-            OSGNodeStruct *child = findDrawObject(childId);
+            auto* const parent = findDrawObject(parentId);
+            auto* const child = findDrawObject(childId);
             osg::PositionAttitudeTransform *parentTransform;
             osg::PositionAttitudeTransform *childTransform;
 
-            if(!parent || !child) return;
+            if(!parent || !child)
+            {
+                return;
+            }
             parentTransform = parent->object()->getPosTransform();
             childTransform = child->object()->getPosTransform();
             parent->object()->addSelectionChild(child->object());
@@ -2762,16 +2890,16 @@ namespace mars
 
         void GraphicsManager::attacheCamToNode(unsigned long winId, unsigned long drawId)
         {
-            GraphicsWidget* gw=getGraphicsWindow(winId);
-            OSGNodeStruct *parent = findDrawObject(drawId);
-            GraphicsCamera* gc = dynamic_cast<GraphicsCamera*>(gw->getCameraInterface());
+            const auto* const gw = getGraphicsWindow(winId);
+            auto* const gc = dynamic_cast<GraphicsCamera*>(gw->getCameraInterface());
 
+            auto* const parent = findDrawObject(drawId);
             if(parent)
             {
-                osg::PositionAttitudeTransform *parentTransform;
-                parentTransform = parent->object()->getPosTransform();
+                const auto& parentTransform = parent->object()->getPosTransform();
                 gc->setTrakingTransform(parentTransform);
-            } else
+            }
+            else
             {
                 gc->setTrakingTransform(nullptr);
             }
@@ -2788,39 +2916,46 @@ namespace mars
 
         void GraphicsManager::addOSGNode(void* node)
         {
-            scene->addChild((osg::Node*)node);
+            scene->addChild(static_cast<osg::Node*>(node));
         }
 
         void GraphicsManager::removeOSGNode(void* node)
         {
-            scene->removeChild((osg::Node*)node);
+            scene->removeChild(static_cast<osg::Node*>(node));
         }
 
         osg_material_manager::MaterialNode* GraphicsManager::getMaterialNode(const std::string &name)
         {
-            if(!materialManager) return nullptr;
+            if(!materialManager)
+            {
+                return nullptr;
+            }
+
             return materialManager->getNewMaterialGroup(name);
         }
 
         void GraphicsManager::addMaterial(const interfaces::MaterialData &material)
         {
-            if(materialManager)
+            if(!materialManager)
             {
-                configmaps::ConfigMap map;
-                interfaces::MaterialData m = material;
-                m.toConfigMap(&map);
-                materialManager->createMaterial(material.name, map);
+                return;
             }
+
+            configmaps::ConfigMap map;
+            auto m = material;
+            m.toConfigMap(&map);
+            materialManager->createMaterial(material.name, map);
         }
 
         osg_material_manager::MaterialNode* GraphicsManager::getSharedStateGroup(unsigned long id)
         {
-            DrawObjects::iterator iter = drawObjects_.find(id);
-            if(iter!=drawObjects_.end())
+            auto iter = drawObjects_.find(id);
+            if(iter==std::end(drawObjects_))
             {
-                return iter->second->object()->getStateGroup();
+                return nullptr;
             }
-            return nullptr;
+
+            return iter->second->object()->getStateGroup();
         }
 
         void GraphicsManager::setUseShadow(bool v)
@@ -2832,15 +2967,20 @@ namespace mars
                 if(pssm.valid())
                 {
                     shadowedScene->setShadowTechnique(pssm.get());
-                } else if(shadowMap.valid())
+                }
+                else if(shadowMap.valid())
                 {
                     shadowedScene->setShadowTechnique(shadowMap.get());
                 }
-            } else
+            }
+            else
             {
                 shadowedScene->setShadowTechnique(nullptr);
             }
-            if(materialManager) materialManager->setUseShadow(v);
+            if(materialManager)
+            {
+                materialManager->setUseShadow(v);
+            }
         }
 
         void GraphicsManager::initShadowMap()
@@ -2856,17 +2996,17 @@ namespace mars
             {
                 shadowedScene->setShadowTechnique(shadowMap.get());
             }
-            for(auto lm: myLights)
+            for(auto& lm: myLights)
             {
                 if(lm.lStruct.map.hasKey("produceShadow"))
                 {
-                    if((bool)lm.lStruct.map["produceShadow"])
+                    if(static_cast<bool>(lm.lStruct.map["produceShadow"]))
                     {
                         shadowMap->setLight(lm.light.get());
                     }
                 }
             }
-            if(materialManager and materialManager->getUseShader())
+            if(materialManager && materialManager->getUseShader())
             {
                 shadowMap->addTexture(shadowStateset.get());
             }
@@ -2877,14 +3017,14 @@ namespace mars
             bool useShader = false;
             if(!pssm.valid())
             {
-                pssm = new ParallelSplitShadowMap(nullptr,NUM_PSSM_SPLITS);
+                pssm = new ParallelSplitShadowMap{nullptr, NUM_PSSM_SPLITS};
 
                 //pssm->enableShadowGLSLFiltering(false);
                 pssm->setTextureResolution(shadowTextureSize.iValue);
                 pssm->setMinNearDistanceForSplits(0);
                 pssm->setMaxFarDistance(500);
                 pssm->setMoveVCamBehindRCamFactor(0);
-                pssm->setPolygonOffset(osg::Vec2(1.2,1.2));
+                pssm->setPolygonOffset(osg::Vec2{1.2,1.2});
                 //pssm->applyState(shadowStateset.get());
                 pssm->applyState(scene->getOrCreateStateSet());
                 if(materialManager)
@@ -2898,11 +3038,11 @@ namespace mars
                 shadowedScene->setShadowTechnique(pssm.get());
             }
 
-            for(auto lm: myLights)
+            for(auto& lm: myLights)
             {
                 if(lm.lStruct.map.hasKey("produceShadow"))
                 {
-                    if((bool)lm.lStruct.map["produceShadow"])
+                    if(static_cast<bool>(lm.lStruct.map["produceShadow"]))
                     {
                         pssm->setLight(lm.light.get());
                     }
@@ -2915,7 +3055,7 @@ namespace mars
             }
         }
 
-        void GraphicsManager::setShadowTechnique(std::string s)
+        void GraphicsManager::setShadowTechnique(const std::string& s)
         {
             if(shadowTechnique.sValue != s)
             {
@@ -2936,30 +3076,41 @@ namespace mars
                     pssm->removeTexture(shadowStateset.get());
                     pssm = nullptr;
                 }
+
+                shadowTechnique.sValue = "none";
                 if(s=="pssm")
                 {
                     initShadowPSSM();
-                } else if(s=="sm")
+                    shadowTechnique.sValue = s;
+                }
+                else if(s=="sm")
                 {
                     initShadowMap();
-                } else if(s=="none")
+                    shadowTechnique.sValue = s;
+                }
+                else if(s=="none")
                 {
                     // nothing to do here
-                } else
+                }
+                else
                 {
                     fprintf(stderr, "Selected shadow technique *%s* unknown, set to \"none\". Please select from [none, sm, pssm]\n", s.c_str());
-                    s = "none";
                 }
-                shadowTechnique.sValue = s;
-                if(materialManager) materialManager->setShadowTechnique(s);
+
+                if(materialManager)
+                {
+                    materialManager->setShadowTechnique(s);
+                }
             }
         }
 
         void GraphicsManager::setCameraDefaultView(int view)
         {
-            interfaces::GraphicsCameraInterface* cam;
-            if(!activeWindow) return;
-            cam = activeWindow->getCameraInterface();
+            if(!activeWindow)
+            {
+                return;
+            }
+            auto* const cam = activeWindow->getCameraInterface();
             switch(view)
             {
             case 1:
@@ -2994,24 +3145,41 @@ namespace mars
                 if(tolower(value) == "true" || value == "1")
                 {
                     graphicOptions.fogEnabled = true;
-                } else if(tolower(value) == "false" || value == "0")
+                }
+                else if(tolower(value) == "false" || value == "0")
                 {
                     graphicOptions.fogEnabled = false;
                 }
-            } else if(matchPattern("*/fogColor", key))
+            }
+            else if(matchPattern("*/fogColor", key))
             {
                 double v = atof(value.c_str());
-                if(key[key.size()-1] == 'a') graphicOptions.fogColor.a = v;
-                else if(key[key.size()-1] == 'r') graphicOptions.fogColor.r = v;
-                else if(key[key.size()-1] == 'g') graphicOptions.fogColor.g = v;
-                else if(key[key.size()-1] == 'b') graphicOptions.fogColor.b = v;
-            } else if(matchPattern("*/fogStart", key))
+                if(key[key.size()-1] == 'a')
+                {
+                    graphicOptions.fogColor.a = v;
+                }
+                else if(key[key.size()-1] == 'r')
+                {
+                    graphicOptions.fogColor.r = v;
+                }
+                else if(key[key.size()-1] == 'g')
+                {
+                    graphicOptions.fogColor.g = v;
+                }
+                else if(key[key.size()-1] == 'b')
+                {
+                    graphicOptions.fogColor.b = v;
+                }
+            }
+            else if(matchPattern("*/fogStart", key))
             {
                 graphicOptions.fogStart = atof(value.c_str());
-            } else if(matchPattern("*/fogEnd", key))
+            }
+            else if(matchPattern("*/fogEnd", key))
             {
                 graphicOptions.fogEnd = atof(value.c_str());
-            } else if(matchPattern("*/fogDensity", key))
+            }
+            else if(matchPattern("*/fogDensity", key))
             {
                 graphicOptions.fogDensity = atof(value.c_str());
             }
@@ -3024,77 +3192,118 @@ namespace mars
             GraphicsWindowInterface *win;
             if(widgetID == 0)
             {
-                if(!activeWindow) return;
+                if(!activeWindow)
+                {
+                    return;
+                }
                 win = activeWindow;
-            } else
+            }
+            else
             {
                 win = get3DWindow(widgetID);
             }
-            GraphicsCameraInterface *cam = win->getCameraInterface();
+            auto* const cam = win->getCameraInterface();
             if(matchPattern("*/projection", key))
             {
                 if(value == "perspective")
                 {
                     cam->changeCameraTypeToPerspective();
-                } else if(value == "orthogonal")
+                }
+                else if(value == "orthogonal")
                 {
                     cam->changeCameraTypeToOrtho();
                 }
-            } else if(matchPattern("*/mouse", key))
+            }
+            else if(matchPattern("*/mouse", key))
             {
                 if(value == "default")
                 {
                     cam->setCamera(ODE_CAM);
-                } else if(value == "invert")
+                }
+                else if(value == "invert")
                 {
                     cam->setCamera(MICHA_CAM);
-                } else if(value == "osg")
+                }
+                else if(value == "osg")
                 {
                     cam->setCamera(OSG_CAM);
-                } else if(value == "iso")
+                }
+                else if(value == "iso")
                 {
                     cam->setCamera(ISO_CAM);
-                } else if(value == "trackball")
+                }
+                else if(value == "trackball")
                 {
                     cam->setCamera(TRACKBALL);
-                } else if(value == "toggle_trackball")
+                }
+                else if(value == "toggle_trackball")
                 {
                     cam->toggleTrackball();
                 }
-            } else if(matchPattern("*/clearColor", key))
+            }
+            else if(matchPattern("*/clearColor", key))
             {
                 double v = atof(value.c_str());
-                Color clearColor = win->getClearColor();
-                if(key[key.size()-1] == 'a') clearColor.a = v;
-                if(key[key.size()-1] == 'r') clearColor.r = v;
-                if(key[key.size()-1] == 'g') clearColor.g = v;
-                if(key[key.size()-1] == 'b') clearColor.b = v;
+                auto clearColor = win->getClearColor();
+                if(key[key.size()-1] == 'a')
+                {
+                    clearColor.a = v;
+                }
+                if(key[key.size()-1] == 'r')
+                {
+                    clearColor.r = v;
+                }
+                if(key[key.size()-1] == 'g')
+                {
+                    clearColor.g = v;
+                }
+                if(key[key.size()-1] == 'b')
+                {
+                    clearColor.b = v;
+                }
                 win->setClearColor(clearColor);
-            } else if(matchPattern("*/orthoH", key))
+            }
+            else if(matchPattern("*/orthoH", key))
             {
                 double v = atof(value.c_str());
                 cam->setOrthoH(v);
-            } else if(matchPattern("*/position", key))
+            }
+            else if(matchPattern("*/position", key))
             {
                 double d = atof(value.c_str());
                 double v[7];
                 if(cam->isTracking())
                 {
                     cam->getOffsetQuat(v, v+1, v+2, v+3, v+4, v+5, v+6);
-                } else
+                }
+                else
                 {
                     cam->getViewportQuat(v, v+1, v+2, v+3, v+4, v+5, v+6);
                 }
-                if(key[key.size()-1] == 'x') v[0] = d;
-                else if(key[key.size()-1] == 'y') v[1] = d;
-                else if(key[key.size()-1] == 'z') v[2] = d;
-                if(cam->isTracking()) {
+
+                if(key[key.size()-1] == 'x')
+                {
+                    v[0] = d;
+                }
+                else if(key[key.size()-1] == 'y')
+                {
+                    v[1] = d;
+                }
+                else if(key[key.size()-1] == 'z')
+                {
+                    v[2] = d;
+                }
+
+                if(cam->isTracking())
+                {
                     cam->setOffsetQuat(v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
-                } else
+                }
+                else
                 {
                     cam->updateViewportQuat(v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
                 }
-            } else if(matchPattern("*/euler", key))
+            }
+            else if(matchPattern("*/euler", key))
             {
                 double d = atof(value.c_str());
                 double v[7];
@@ -3102,7 +3311,8 @@ namespace mars
                 if(cam->isTracking())
                 {
                     cam->getOffsetQuat(v, v+1, v+2, v+3, v+4, v+5, v+6);
-                } else
+                }
+                else
                 {
                     cam->getViewportQuat(v, v+1, v+2, v+3, v+4, v+5, v+6);
                 }
@@ -3110,22 +3320,34 @@ namespace mars
                 q.y() = v[4];
                 q.z() = v[5];
                 q.w() = v[6];
-                sRotation r = quaternionTosRotation(q);
-                if(key.find("alpha") != string::npos) r.alpha = d;
-                else if(key.find("beta") != string::npos) r.beta = d;
-                else if(key.find("gamma") != string::npos) r.gamma = d;
+                auto r = quaternionTosRotation(q);
+                if(key.find("alpha") != string::npos)
+                {
+                    r.alpha = d;
+                }
+                else if(key.find("beta") != string::npos)
+                {
+                    r.beta = d;
+                }
+                else if(key.find("gamma") != string::npos)
+                {
+                    r.gamma = d;
+                }
                 q = eulerToQuaternion(r);
                 if(cam->isTracking())
                 {
                     cam->setOffsetQuat(v[0], v[1], v[2], q.x(), q.y(), q.z(), q.w());
-                } else
+                }
+                else
                 {
                     cam->updateViewportQuat(v[0], v[1], v[2], q.x(), q.y(), q.z(), q.w());
                 }
-            } else if(matchPattern("*/moveSpeed", key))
+            }
+            else if(matchPattern("*/moveSpeed", key))
             {
                 cam->setMoveSpeed(atof(value.c_str()));
-            } else if(matchPattern("*/logTrackingRotation", key))
+            }
+            else if(matchPattern("*/logTrackingRotation", key))
             {
                 cam->setTrackingLogRotation(atoi(value.c_str()));
             }
@@ -3133,29 +3355,34 @@ namespace mars
 
         osg::Vec3f GraphicsManager::getSelectedPos()
         {
-            DrawObjectList::iterator drawListIt;
-            for(drawListIt=selectedObjects_.begin(); drawListIt!=selectedObjects_.end();
-                ++drawListIt)
+            if (selectedObjects_.size() == 0)
             {
-                Vector p = (*drawListIt)->object()->getPosition();
-                return osg::Vec3f(p.x(), p.y(), p.z());
+                return osg::Vec3f{0, 0, 0};
             }
-            return osg::Vec3f(0, 0, 0);
+
+            for(auto& selectedObject: selectedObjects_)
+            {
+                const auto& p = selectedObject->object()->getPosition();
+                return osg::Vec3f{p.x(), p.y(), p.z()};
+                // TODO: multiple selections?
+            }
         }
 
         void GraphicsManager::showFrames(bool val)
         {
-            for(DrawObjects::iterator iter=drawObjects_.begin();
-                iter!=drawObjects_.end(); ++iter)
+            for(auto& drawObject: drawObjects_)
             {
-                if(iter->second->object()->frame)
+                auto& frame = drawObject.second->object()->frame;
+                if(frame)
                 {
+                    auto node = static_cast<osg::PositionAttitudeTransform*>(frame->getOSGNode());
                     if(val)
                     {
-                        scene->addChild((osg::PositionAttitudeTransform*)(iter->second->object()->frame->getOSGNode()));
-                    } else
+                        scene->addChild(node);
+                    }
+                    else
                     {
-                        scene->removeChild((osg::PositionAttitudeTransform*)(iter->second->object()->frame->getOSGNode()));
+                        scene->removeChild(node);
                     }
                 }
             }
@@ -3163,12 +3390,12 @@ namespace mars
 
         void GraphicsManager::scaleFrames(double x)
         {
-            for(DrawObjects::iterator iter=drawObjects_.begin();
-                iter!=drawObjects_.end(); ++iter)
+            for(auto& drawObject: drawObjects_)
             {
-                if(iter->second->object()->frame)
+                auto& frame = drawObject.second->object()->frame;
+                if(frame)
                 {
-                    iter->second->object()->frame->setScale(x);
+                    frame->setScale(x);
                 }
             }
         }

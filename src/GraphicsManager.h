@@ -10,9 +10,6 @@
 
 #include <osgShadow/ShadowedScene>
 #include <osgShadow/LightSpacePerspectiveShadowMap>
-//#include <osgShadow/ParallelSplitShadowMap>
-//#include <osgShadow/SoftShadowMap>
-//#include <osgShadow/ShadowMap>
 
 #include "ShadowMap.h"
 #include "ParallelSplitShadowMap.h"
@@ -204,8 +201,8 @@ namespace mars
             virtual void* getQTWidget(unsigned long id) const override;
             virtual void showQTWidget(unsigned long id) override;
 
-            virtual unsigned long new3DWindow(void *myQTWidget = 0, bool rtt = 0,
-                                              int width = 0, int height = 0, const std::string &name=std::string("")) override;
+            virtual unsigned long new3DWindow(void *myQTWidget = nullptr, bool rtt = false,
+                                              int width = 0, int height = 0, const std::string &name=std::string{""}) override;
             virtual interfaces::GraphicsWindowInterface* get3DWindow(unsigned long id) const override;
             virtual void remove3DWindow(unsigned long id) override;
 
@@ -298,7 +295,7 @@ namespace mars
             virtual void edit(unsigned long widgetID, const std::string &key,
                               const std::string &value) override;
             osg::Vec3f getSelectedPos();
-            void setShadowTechnique(std::string s);
+            void setShadowTechnique(const std::string& s);
 
             // ## DataBroker callbacks ##
             virtual void produceData(const data_broker::DataInfo &info,
@@ -355,9 +352,6 @@ namespace mars
 
             lightmanager defaultLight;
 
-            //HUDTerminal *myTerminal;
-            //HUDLabel *myLabel;
-            //HUDTexture *myTexture;
             void *image_data;
             double tex_x, tex_y;
             unsigned int framecount;
@@ -368,11 +362,12 @@ namespace mars
             std::vector<interfaces::GraphicsEventClient*> graphicsEventClientList;
             osg::ref_ptr<osg::Camera> hudCamera;
 
-            std::map<unsigned long int, unsigned long int> DrawCoreIds;
+            std::map<unsigned long, unsigned long> DrawCoreIds;
 
             std::vector<nodemanager> myNodes;
             DrawObjects previewNodes_;
             DrawObjects drawObjects_;
+
             // object selection
             DrawObjectList selectedObjects_;
             std::list<interfaces::GraphicsUpdateInterface*> graphicsUpdateObjects;
