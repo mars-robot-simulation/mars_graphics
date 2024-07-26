@@ -32,37 +32,40 @@ namespace mars
             // create selection material, will be used if object is selected
             //NEW_MATERIAL_STRUCT(mStruct);
             MaterialData mStruct;
-            mStruct.diffuseFront = Color( 0.0, 1.0, 0.0, 1.0 );
-            return new OSGMaterialStruct(mStruct);
+            mStruct.diffuseFront = Color{0.0, 1.0, 0.0, 1.0};
+            return new OSGMaterialStruct{mStruct};
         }
 
         osg::ref_ptr<osg::Material> DrawObject::selectionMaterial = makeSelectionMaterial();
 
         DrawObject::DrawObject(GraphicsManager *g)
-            : id_(0),
-              nodeMask_(0xfffffff),
-              stateFilename_(""),
-              selected_(false),
-              selectable_(true),
-              group_(0),
-              posTransform_(0),
-              scaleTransform_(0),
-              maxNumLights(1),
-              g(g),
-              sharedStateGroup(false),
-              showSelected(true),
-              isHidden(true),
-              brightness(1.0),
-              frame(nullptr)
+            : id_{0},
+              nodeMask_{0xfffffff},
+              stateFilename_{""},
+              selected_{false},
+              selectable_{true},
+              group_{0},
+              posTransform_{0},
+              scaleTransform_{0},
+              maxNumLights{1},
+              graphicsManager{g},
+              sharedStateGroup{false},
+              showSelected{true},
+              isHidden{true},
+              brightness{1.0},
+              frame{nullptr}
         {
         }
 
         DrawObject::~DrawObject()
         {
-            if(materialNode.valid()) materialNode->removeChild(posTransform_.get());
+            if(materialNode.valid())
+            {
+                materialNode->removeChild(posTransform_.get());
+            }
             if(!sharedStateGroup)
             {
-                // todo: remove materialnode from manager
+                // TODO: remove materialnode from manager
             }
         }
 
@@ -82,37 +85,29 @@ namespace mars
             id_ = id;
             pivot_ = pivot;
 
-            scaleTransform_ = new osg::MatrixTransform();
+            scaleTransform_ = new osg::MatrixTransform;
             scaleTransform_->setMatrix(osg::Matrix::scale(1.0, 1.0, 1.0));
             scaleTransform_->setDataVariance(osg::Node::STATIC);
 
-            posTransform_ = new osg::PositionAttitudeTransform();
-            posTransform_->setPivotPoint(osg::Vec3(pivot_.x(), pivot_.y(), pivot_.z()));
-            posTransform_->setPosition(osg::Vec3(0.0, 0.0, 0.0));
+            posTransform_ = new osg::PositionAttitudeTransform;
+            posTransform_->setPivotPoint(osg::Vec3{pivot_.x(), pivot_.y(), pivot_.z()});
+            posTransform_->setPosition(osg::Vec3{});
             posTransform_->addChild(scaleTransform_.get());
             posTransform_->setNodeMask(nodeMask_);
 
             group_ = new osg::Group;
             if(sharedID)
             {
-                materialNode = g->getSharedStateGroup(sharedID);
-                if(materialNode.valid())
-                {
-                    sharedStateGroup = true;
-                } else
-                {
-                    sharedStateGroup = false;
-                }
+                materialNode = graphicsManager->getSharedStateGroup(sharedID);
+                sharedStateGroup = materialNode.valid();
             }
 
-            std::list< osg::ref_ptr< osg::Geode > > geodes = createGeometry();
-            for(std::list< osg::ref_ptr< osg::Geode > >::iterator it = geodes.begin();
-                it != geodes.end(); ++it)
+            for(auto geode: createGeometry())
             {
-                group_->addChild(it->get());
-                for(unsigned int i=0; i<it->get()->getNumDrawables(); ++i)
+                group_->addChild(geode.get());
+                for(unsigned int i=0; i<geode.get()->getNumDrawables(); ++i)
                 {
-                    osg::Drawable *draw = it->get()->getDrawable(i);
+                    auto* const draw = geode.get()->getDrawable(i);
                     geometry_.push_back(draw->asGeometry());
                 }
             }
@@ -120,25 +115,30 @@ namespace mars
             // get the size of the object
             osg::ComputeBoundsVisitor cbbv;
             group_->accept(cbbv);
-            osg::BoundingBox bb = cbbv.getBoundingBox();
+            const auto& bb = cbbv.getBoundingBox();
             if(fabs(bb.xMax()) > fabs(bb.xMin()))
             {
                 geometrySize_.x() = fabs(bb.xMax() - bb.xMin());
-            } else
+            }
+            else
             {
                 geometrySize_.x() = fabs(bb.xMin() - bb.xMax());
             }
+
             if(fabs(bb.yMax()) > fabs(bb.yMin()))
             {
                 geometrySize_.y() = fabs(bb.yMax() - bb.yMin());
-            } else
+            }
+            else
             {
                 geometrySize_.y() = fabs(bb.yMin() - bb.yMax());
             }
+
             if(fabs(bb.zMax()) > fabs(bb.zMin()))
             {
                 geometrySize_.z() = fabs(bb.zMax() - bb.zMin());
-            } else
+            }
+            else
             {
                 geometrySize_.z() = fabs(bb.zMin() - bb.zMax());
             }
@@ -146,7 +146,8 @@ namespace mars
             if(lod.valid())
             {
                 scaleTransform_->addChild(lod.get());
-            } else
+            }
+            else
             {
                 scaleTransform_->addChild(group_.get());
             }
@@ -155,17 +156,16 @@ namespace mars
         void DrawObject::addLODGeodes(std::list< osg::ref_ptr< osg::Geode > > geodes,
                                       float start, float end)
         {
-            std::list< osg::ref_ptr< osg::Geode > >::iterator it;
             if(!lod.valid())
             {
-                lod = new osg::LOD();
+                lod = new osg::LOD;
             }
-            for(it=geodes.begin(); it!=geodes.end(); ++it)
+            for(auto& geode : geodes)
             {
-                lod->addChild(it->get(), start, end);
-                for(unsigned int i=0; i<it->get()->getNumDrawables(); ++i)
+                lod->addChild(geode.get(), start, end);
+                for(unsigned int i=0; i<geode.get()->getNumDrawables(); ++i)
                 {
-                    osg::Drawable *draw = it->get()->getDrawable(i);
+                    auto* const draw = geode.get()->getDrawable(i);
                     geometry_.push_back(draw->asGeometry());
                 }
             }
@@ -173,6 +173,7 @@ namespace mars
 
         void DrawObject::setStateFilename(const std::string &filename, int create)
         {
+            // TODO: use fstream?
             stateFilename_ = filename;
             if(create)
             {
@@ -183,6 +184,7 @@ namespace mars
 
         void DrawObject::exportState(void)
         {
+            // TODO: use fstream?
             if(id_)
             {
                 FILE* stateFile = fopen(stateFilename_.data(), "a");
@@ -197,11 +199,11 @@ namespace mars
             // note obj export ignores stateset's of groups
             if(materialNode.valid())
             {
-                osg::ref_ptr<osg::Group> tmpNode = new osg::Group;
-                osg::ref_ptr<osg_material_manager::OsgMaterial> material = materialNode->getMaterial();
+                auto tmpNode = osg::ref_ptr<osg::Group>{new osg::Group};
+                auto material = osg::ref_ptr<osg_material_manager::OsgMaterial>{materialNode->getMaterial()};
                 if(material.valid())
                 {
-                    osg::StateSet *set = material->getStateSet();
+                    auto* const set = material->getStateSet();
                     tmpNode->setStateSet(set);
                 }
                 tmpNode->getOrCreateStateSet()->merge(*(materialNode->getStateSet()));
@@ -213,9 +215,8 @@ namespace mars
         // the material struct can also contain a static texture (texture file)
         void DrawObject::setMaterial(const std::string &name)
         {
-
-            //osg::StateSet *mState = g->getMaterialStateSet(mStruct);
-            bool show_ = !isHidden;
+            //osg::StateSet *mState = graphicsManager->getMaterialStateSet(mStruct);
+            const bool show_ = !isHidden;
             if(materialNode.valid())
             {
                 // todo: do not show if is already hidden
@@ -224,7 +225,7 @@ namespace mars
             if(!sharedStateGroup)
             {
                 // todo: remove materialNode from manager
-                materialNode = g->getMaterialNode(name);
+                materialNode = graphicsManager->getMaterialNode(name);
                 materialNode->setBrightness(brightness);
             }
             if(show_)
@@ -236,7 +237,7 @@ namespace mars
         void DrawObject::setPosition(const Vector &_pos)
         {
             position_ = _pos;
-            posTransform_->setPosition(osg::Vec3(position_.x(), position_.y(), position_.z()));
+            posTransform_->setPosition(osg::Vec3{position_.x(), position_.y(), position_.z()});
             if(frame)
             {
                 frame->setPosition(position_.x(), position_.y(), position_.z());
@@ -259,20 +260,20 @@ namespace mars
         {
             scaleTransform_->setMatrix(osg::Matrix::scale(
                                            scale.x(), scale.y(), scale.z()));
-            posTransform_->setPivotPoint(osg::Vec3(
-                                             pivot_.x()*scale.x(), pivot_.y()*scale.y(), pivot_.z()*scale.z()));
-            scaledSize_ = Vector(
+            posTransform_->setPivotPoint(osg::Vec3{
+                                             pivot_.x()*scale.x(), pivot_.y()*scale.y(), pivot_.z()*scale.z()});
+            scaledSize_ = Vector{
                 scale.x() * geometrySize_.x(),
                 scale.y() * geometrySize_.y(),
-                scale.z() * geometrySize_.z());
+                scale.z() * geometrySize_.z()};
         }
 
         void DrawObject::setScaledSize(const Vector &scaledSize)
         {
-            setScale(Vector(
+            setScale(Vector{
                          scaledSize.x() / geometrySize_.x(),
                          scaledSize.y() / geometrySize_.y(),
-                         scaledSize.z() / geometrySize_.z()));
+                         scaledSize.z() / geometrySize_.z()});
         }
 
         void DrawObject::removeBits(unsigned int bits)
@@ -300,9 +301,8 @@ namespace mars
             {
                 osg::PolygonMode *polyModeObj;
 
-                osg::StateSet *state = group_->getOrCreateStateSet();
-                polyModeObj = dynamic_cast<osg::PolygonMode*>
-                    (state->getAttribute(osg::StateAttribute::POLYGONMODE));
+                auto* const state = group_->getOrCreateStateSet();
+                polyModeObj = dynamic_cast<osg::PolygonMode*>(state->getAttribute(osg::StateAttribute::POLYGONMODE));
 
                 if(!polyModeObj)
                 {
@@ -320,10 +320,10 @@ namespace mars
                             "{\n"
                             "    gl_FragColor = vec4(0, 0.75, 0, 1);\n"
                             "}\n";
-                        selectShader->addShader(new osg::Shader(osg::Shader::FRAGMENT, fragmentSource));
+                        selectShader->addShader(new osg::Shader{osg::Shader::FRAGMENT, fragmentSource});
                     }
                     state->setAttributeAndModes(selectShader.get(), osg::StateAttribute::ON);
-                    osg::LineWidth *lw = new osg::LineWidth(2);
+                    auto* const lw = new osg::LineWidth{2};
                     state->setAttributeAndModes(lw, osg::StateAttribute::ON);
                     polyModeObj->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
                     //state->setAttributeAndModes(material_.get(), osg::StateAttribute::OFF);
@@ -334,7 +334,8 @@ namespace mars
                                    osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED  | osg::StateAttribute::OVERRIDE);
                     state->setMode(GL_FOG, osg::StateAttribute::OFF  | osg::StateAttribute::OVERRIDE);
 
-                } else
+                }
+                else
                 {
                     if(selectShader.valid())
                     {
@@ -346,10 +347,9 @@ namespace mars
                     //state->setAttributeAndModes(material_.get(), osg::StateAttribute::ON);
                     state->removeMode(GL_LIGHTING);
                     state->removeMode(GL_FOG);
-
                 }
             }
-            for(auto it:selectionChilds)
+            for(auto& it: selectionChilds)
             {
                 it->setSelected(val);
             }
@@ -357,14 +357,8 @@ namespace mars
 
         void DrawObject::setRenderBinNumber(int number)
         {
-            osg::StateSet *state = group_->getOrCreateStateSet();
-            if(number == 0)
-            {
-                state->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-            } else
-            {
-                state->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
-            }
+            auto* const state = group_->getOrCreateStateSet();
+            state->setMode(GL_DEPTH_TEST, (number == 0) ? osg::StateAttribute::ON : osg::StateAttribute::OFF);
             state->setRenderBinDetails(number, "RenderBin");
         }
 
@@ -379,7 +373,11 @@ namespace mars
 
         void DrawObject::show()
         {
-            if(!materialNode.valid()) return;
+            if(!materialNode.valid())
+            {
+                return;
+            }
+
             hide();
             isHidden = false;
             materialNode->addChild(posTransform_.get());
@@ -387,14 +385,22 @@ namespace mars
 
         void DrawObject::hide()
         {
-            if(!materialNode.valid()) return;
+            if(!materialNode.valid())
+            {
+                return;
+            }
+
             isHidden = true;
             materialNode->removeChild(posTransform_.get());
         }
 
         void DrawObject::seperateMaterial()
         {
-            if(!materialNode.valid()) return;
+            if(!materialNode.valid())
+            {
+                return;
+            }
+
             materialNode->removeChild(posTransform_.get());
             posTransform_->setStateSet(materialNode->getStateSet());
             scaleTransform_->setStateSet(materialNode->getMaterial()->getStateSet());
@@ -407,7 +413,8 @@ namespace mars
                 if(val)
                 {
                     scaleTransform_->addChild(normal_geode.get());
-                } else
+                }
+                else
                 {
                     scaleTransform_->removeChild(normal_geode.get());
                 }

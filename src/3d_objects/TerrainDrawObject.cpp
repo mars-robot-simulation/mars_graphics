@@ -89,7 +89,7 @@ namespace mars
             group_ = new osg::Group;
             if(sharedID)
             {
-                materialNode = g->getSharedStateGroup(sharedID);
+                materialNode = graphicsManager->getSharedStateGroup(sharedID);
                 if(materialNode.valid())
                 {
                     sharedStateGroup = true;
@@ -349,7 +349,7 @@ namespace mars
             geom->setNormalArray(normals.get());
             geom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
             geom->setTexCoordArray(DEFAULT_UV_UNIT,texcoords.get());
-            geom->setTexCoordArray(1,texcoords.get()); // TODO: y?
+            geom->setTexCoordArray(1, texcoords.get()); // TODO: why?
 
             normal_geom->setVertexArray(normal_debug.get());
             osg::Vec4Array* colours_debug = new osg::Vec4Array(1);

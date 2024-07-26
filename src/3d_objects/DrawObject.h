@@ -139,7 +139,9 @@ namespace mars
             unsigned int nodeMask_;
 
             std::string stateFilename_;
-            bool selected_, selectable_, showSelected;
+            bool selected_;
+            bool selectable_;
+            bool showSelected;
             osg::ref_ptr<osg_material_manager::MaterialNode> materialNode;
             osg::ref_ptr<osg::Group> group_;
             std::list< osg::ref_ptr<osg::Geometry> > geometry_;
@@ -148,14 +150,17 @@ namespace mars
             osg::ref_ptr<osg::PositionAttitudeTransform> posTransform_;
             osg::ref_ptr<osg::MatrixTransform> scaleTransform_;
             std::vector<DrawObject*> selectionChilds;
-            mars::utils::Vector position_, pivot_, geometrySize_, scaledSize_;
+            mars::utils::Vector position_;
+            mars::utils::Vector pivot_;
+            mars::utils::Vector geometrySize_;
+            mars::utils::Vector scaledSize_;
             mars::utils::Quaternion quaternion_;
             osg::ref_ptr<osg::Program> selectShader;
             int maxNumLights;
             bool sharedStateGroup;
             bool isHidden;
             double brightness;
-            GraphicsManager *g;
+            GraphicsManager *graphicsManager;
 
             virtual std::list< osg::ref_ptr< osg::Geode > > createGeometry() = 0;
         }; // end of class DrawObject
