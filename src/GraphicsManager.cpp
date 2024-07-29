@@ -479,6 +479,7 @@ namespace mars
             }
             DrawCoreIds.clear();
             clearDrawItems();
+
         }
 
         void GraphicsManager::addGraphicsUpdateInterface(GraphicsUpdateInterface *g)
@@ -1052,6 +1053,13 @@ namespace mars
         unsigned long GraphicsManager::addDrawObject(const mars::interfaces::NodeData &snode,
                                                      bool activated)
         {
+            const auto drawObjectItr = std::find_if(std::begin(drawObjects_), std::end(drawObjects_),
+                                                    [&snode](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x)
+                                                    { return x.second->name() == snode.name; });
+            if (drawObjectItr != std::end(drawObjects_))
+            {
+                return drawObjectItr->first;
+            }
             unsigned long id = next_draw_object_id++;
             int mask = 0;
 
@@ -1067,7 +1075,7 @@ namespace mars
             DrawCoreIds.insert(std::make_pair(id, snode.index));
             drawObjects_[id] = drawObject;
             auto* const configPtr = const_cast<ConfigMap*>(&(snode.map));
-            if(configPtr->hasKey("createFrame") and static_cast<bool>((*configPtr)["createFrame"]) == true)
+            if(configPtr->hasKey("createFrame") && static_cast<bool>((*configPtr)["createFrame"]) == true)
             {
                 drawObject->object()->frame = framesFactory->createFrame();
                 drawObject->object()->frame->setScale(scaleFramesProp.dValue);
@@ -1126,15 +1134,8 @@ namespace mars
             setDrawObjectMaterial(id, snode.material);
             if(activated)
             {
-                if(mask != 0)
-                {
-                    drawObject->object()->show();
-                    //shadowedScene->addChild(transform);
-                } else
-                {
-                    drawObject->object()->show();
-                    //shadowedScene->addChild(transform);
-                }
+                drawObject->object()->show();
+
                 if(shadowMap.valid() && snode.map.find("shadowCenterRadius") != snode.map.end())
                 {
                     shadowMap->setCenterObject(drawObject->object());

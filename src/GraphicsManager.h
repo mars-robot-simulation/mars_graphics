@@ -382,7 +382,7 @@ namespace mars
             osg::ref_ptr<ShadowMap> shadowMap;
             osg::ref_ptr<ParallelSplitShadowMap> pssm;
 
-            osg_frames::FramesFactory *framesFactory;
+            osg_frames::FramesFactory* framesFactory;
 
 
             /**\brief adds a preview node to the scene */
