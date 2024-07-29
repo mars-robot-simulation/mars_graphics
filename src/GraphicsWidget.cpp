@@ -35,7 +35,7 @@ namespace mars
                                                              bool>
         {
         public:
-            bool operator() (typename T::value_type &pair,
+            bool operator() (typename T::value_type& pair,
                              typename T::mapped_type i) const
                 {
                     return pair.second == i;
@@ -43,11 +43,11 @@ namespace mars
         };
 
 
-        GraphicsWidget::GraphicsWidget(void *parent,
+        GraphicsWidget::GraphicsWidget(void* parent,
                                        osg::Group* scene, unsigned long id,
                                        bool isRTTWidget,
-                                       GraphicsManager *gm):
-            _osgWidgetWindowManager(0), _osgWidgetWindowCnt(0), gm(gm), hasFocus(false)
+                                       GraphicsManager* gm):
+            _osgWidgetWindowManager{nullptr}, _osgWidgetWindowCnt{0}, gm{gm}, hasFocus{false}
         {
             (void)parent;
 
@@ -83,7 +83,10 @@ namespace mars
              */
             fprintf(stderr, "get to destructor\n");
             this->ref();
-            if(gm) gm->removeGraphicsWidget(widgetID);
+            if(gm)
+            {
+                gm->removeGraphicsWidget(widgetID);
+            }
             delete graphicsCamera;
             delete myHUD;
         }

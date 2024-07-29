@@ -46,7 +46,7 @@ namespace mars
                            unsigned long id, bool hasRTTWidget = 0,
                            GraphicsManager *gm=0);
             ~GraphicsWidget();
-            void initializeOSG(void *data = 0, GraphicsWidget* shared = 0,
+            void initializeOSG(void* data = nullptr, GraphicsWidget* shared = nullptr,
                                int width = 0, int height = 0, bool vsync = false);
 
             unsigned long getID(void);
@@ -55,8 +55,8 @@ namespace mars
             mars::utils::Vector getMousePos();
 
             virtual void setWGeometry(int top, int left, int width, int height) {};
-            virtual void getWGeometry(int *top, int *left,
-                                      int *width, int *height) const {};
+            virtual void getWGeometry(int* top, int* left,
+                                      int* width, int* height) const {};
             void setFullscreen(bool val, int display = 1);
 
             osgViewer::View* getView(void);
@@ -75,12 +75,12 @@ namespace mars
             std::vector<osg::Node*> getPickedObjects();
             void clearSelectionVectors(void);
 
-            void setGraphicsEventHandler(interfaces::GraphicsEventInterface *graphicsEventHandler);
-            void addGraphicsEventHandler(interfaces::GraphicsEventInterface *graphicsEventHandler);
+            void setGraphicsEventHandler(interfaces::GraphicsEventInterface* graphicsEventHandler);
+            void addGraphicsEventHandler(interfaces::GraphicsEventInterface* graphicsEventHandler);
 
             virtual osgWidget::WindowManager* getOrCreateWindowManager();
-            void setHUD(HUD *theHUD);
-            void addHUDElement(HUDElement *elem);
+            void setHUD(HUD* theHUD);
+            void addHUDElement(HUDElement* elem);
             void removeHUDElement(HUDElement* elem);
             void switchHudElemtVis(int num_element);
 
@@ -105,53 +105,55 @@ namespace mars
             virtual bool deleteWindow(int wndId);
             virtual bool deleteWidget(int wdgId);
 
-            virtual void setName(const std::string &name){
+            virtual void setName(const std::string &name)
+            {
                 this->name = name;
             }
 
-            virtual const std::string getName() const{
+            virtual const std::string getName() const
+            {
                 return name;
             }
 
             virtual bool windowSetPosition(int wndId,float x,float y);
-            virtual int createWidget(const std::string &name,float sizex,float sizey);
+            virtual int createWidget(const std::string& name,float sizex,float sizey);
             virtual bool setColor(int id,float r,float g,float b,float a);
             virtual bool addWidgetToWindow(int window,int widget);
             virtual bool addWidgetToWindow(int window,int widget,float x, float y);
             virtual bool addWidgetToWindow(int window,int widget,int x, int y);
 
-            virtual int createLabel(const std::string &name,const std::string &text);
-            virtual int createInput(const std::string &name,const std::string &text,int count);
+            virtual int createLabel(const std::string& name,const std::string& text);
+            virtual int createInput(const std::string& name,const std::string& text, int count);
             virtual bool setLabel(int id,const std::string& text);
 
-            virtual bool setFont(int id,const std::string &fontname);
+            virtual bool setFont(int id,const std::string& fontname);
             virtual bool setFontColor(int id,float r, float g,float b,float a);
             virtual bool setFontSize(int id,int size);
-            virtual bool createStyle(const std::string& name,const std::string &style);
-            virtual bool setStyle(int id,const std::string &styleName);
-            virtual bool setSize(int id,float x, float y);
-            virtual bool addMousePushEventCallback(int id, guiClickCallBack function,guiClickCallBackBind *bindptr=0);
-            virtual bool addMouseReleaseEventCallback(int id, guiClickCallBack function,guiClickCallBackBind *bindptr=0);
-            virtual bool addMouseEnterEventCallback(int id, guiClickCallBack function,guiClickCallBackBind *bindptr=0);
-            virtual bool addMouseLeaveEventCallback(int id, guiClickCallBack function,guiClickCallBackBind *bindptr=0);
+            virtual bool createStyle(const std::string& name,const std::string& style);
+            virtual bool setStyle(int id, const std::string& styleName);
+            virtual bool setSize(int id, float x, float y);
+            virtual bool addMousePushEventCallback(int id, guiClickCallBack function, guiClickCallBackBind* bindptr=nullptr);
+            virtual bool addMouseReleaseEventCallback(int id, guiClickCallBack function, guiClickCallBackBind* bindptr=nullptr);
+            virtual bool addMouseEnterEventCallback(int id, guiClickCallBack function, guiClickCallBackBind* bindptr=nullptr);
+            virtual bool addMouseLeaveEventCallback(int id, guiClickCallBack function, guiClickCallBackBind* bindptr=nullptr);
 
-            bool addEventToWidget(int id,guiClickCallBack function,guiClickCallBackBind *bindptr, osgWidget::EventType type);
+            bool addEventToWidget(int id, guiClickCallBack function, guiClickCallBackBind* bindptr, osgWidget::EventType type);
 
-            virtual bool setImage(int id,const std::string& path);
-            virtual int createTable(const std::string& name,int row, int colums);
-            virtual bool setLayer(int id,int layer, int offset=0);
-            virtual bool getLayer(int id,int &layer);
+            virtual bool setImage(int id, const std::string& path);
+            virtual int createTable(const std::string& name, int row, int colums);
+            virtual bool setLayer(int id, int layer, int offset=0);
+            virtual bool getLayer(int id, int& layer);
             virtual bool setAlignHorizontal(int id,int h);
             virtual bool setAlignVertical(int id, int v);
-            virtual bool getAlignHorizontal(int id,int &h);
-            virtual bool getAlignVertical(int id, int &v);
+            virtual bool getAlignHorizontal(int id,int& h);
+            virtual bool getAlignVertical(int id, int& v);
             virtual bool setAnchorVertical(int id,int va);
             virtual bool setAnchorHorizontal(int id,int ha);
 
             virtual bool setCanFill(int id, bool state);
             virtual bool setShadow(int id,float intensity);
             virtual bool addSize(int id, float x, float y);
-            virtual bool addColor(int id,float r,float g,float b,float a);
+            virtual bool addColor(int id,float r,float g, float b,float a);
             /**
              * This function copies the image data in the given buffer.
              * It assumes that the buffer ist correctly initalized
@@ -161,8 +163,8 @@ namespace mars
              * @param width returns the width of the image
              * @param height returns the height of the image
              * */
-            virtual void getImageData(char *buffer, int &width, int &height);
-            virtual void getImageData(void **data, int &width, int &height);
+            virtual void getImageData(char* buffer, int& width, int& height);
+            virtual void getImageData(void** data, int& width, int& height);
 
             /**
              * This function copies the depth image in the given buffer.
@@ -173,13 +175,15 @@ namespace mars
              * @param width returns the width of the image
              * @param height returns the height of the image
              * */
-            virtual void getRTTDepthData(float *buffer, int &width, int &height);
-            virtual void getRTTDepthData(float **data, int &width, int &height);
+            virtual void getRTTDepthData(float* buffer, int& width, int& height);
+            virtual void getRTTDepthData(float** data, int& width, int& height);
 
-            virtual osg::Group* getScene(){
+            virtual osg::Group* getScene()
+            {
                 return scene;
             }
-            virtual void setScene(osg::Group *s) {
+            virtual void setScene(osg::Group* s)
+            {
                 scene = s;
             }
 
@@ -192,7 +196,10 @@ namespace mars
 
         protected:
             // the widget size
-            int widgetWidth, widgetHeight, widgetX, widgetY;
+            int widgetWidth;
+            int widgetHeight
+            int widgetX
+            int widgetY;
 
             // protected for osg reference counter
 
@@ -201,7 +208,7 @@ namespace mars
             osgWidget::Window* getWindowById(int wndId);
             osgWidget::Widget* getWidgetById(int wdId);
 
-            int addOsgWidget(osgWidget::Widget *wid);
+            int addOsgWidget(osgWidget::Widget* wid);
             int addOsgWindow(osgWidget::Window* wnd);
             osgWidget::WindowManager* _osgWidgetWindowManager;
             //   typedef std::map<int,void* > WindowCallackMapType;
@@ -226,7 +233,7 @@ namespace mars
             // holds a single view on a scene, this view may be composed of one or more slave cameras
             osg::ref_ptr<osgViewer::View> view;
             // root of the scene
-            osg::Group *scene;
+            osg::Group* scene;
 
             // toggle for render to texture
             bool isRTTWidget;
@@ -239,13 +246,13 @@ namespace mars
             std::vector<interfaces::GraphicsEventInterface *> graphicsEventHandler;
 
             // 2D display on top of the scene
-            HUD *myHUD;
+            HUD* myHUD;
             // camera for the 2D display
             osg::ref_ptr<osg::Camera> hudCamera;
 
             // called post drawing
-            PostDrawCallback *postDrawCallback;
-            GraphicsManager *gm;
+            PostDrawCallback* postDrawCallback;
+            GraphicsManager* gm;
 
             // the widget id
             unsigned long widgetID;
@@ -296,19 +303,19 @@ namespace mars
             // implements osgGA::GUIEventHandler::handle
             bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
             // some event handlers...
-            bool handleKeyDownEvent(const osgGA::GUIEventAdapter &ea);
+            bool handleKeyDownEvent(const osgGA::GUIEventAdapter& ea);
 
-            bool handleKeyUpEvent(const osgGA::GUIEventAdapter &ea);
-            bool handlePushEvent(const osgGA::GUIEventAdapter &ea);
-            bool handleMoveEvent(const osgGA::GUIEventAdapter &ea);
-            bool handleDragEvent(const osgGA::GUIEventAdapter &ea);
-            bool handleScrollEvent(const osgGA::GUIEventAdapter &ea);
+            bool handleKeyUpEvent(const osgGA::GUIEventAdapter& ea);
+            bool handlePushEvent(const osgGA::GUIEventAdapter& ea);
+            bool handleMoveEvent(const osgGA::GUIEventAdapter& ea);
+            bool handleDragEvent(const osgGA::GUIEventAdapter& ea);
+            bool handleScrollEvent(const osgGA::GUIEventAdapter& ea);
 
-            bool handleResizeEvent(const osgGA::GUIEventAdapter &ea);
+            bool handleResizeEvent(const osgGA::GUIEventAdapter& ea);
             bool handleReleaseEvent(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
-            void sendKeyDownEvent(const osgGA::GUIEventAdapter &ea);
-            void sendKeyUpEvent(const osgGA::GUIEventAdapter &ea);
-            void translateKey(int &key, unsigned int &mod);
+            void sendKeyDownEvent(const osgGA::GUIEventAdapter& ea);
+            void sendKeyUpEvent(const osgGA::GUIEventAdapter& ea);
+            void translateKey(int& key, unsigned int& mod);
 
             bool pick(const double x, const double y);
 
