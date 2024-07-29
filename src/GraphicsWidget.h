@@ -197,8 +197,8 @@ namespace mars
         protected:
             // the widget size
             int widgetWidth;
-            int widgetHeight
-            int widgetX
+            int widgetHeight;
+            int widgetX;
             int widgetY;
 
             // protected for osg reference counter
