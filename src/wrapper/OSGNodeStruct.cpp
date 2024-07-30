@@ -133,7 +133,7 @@ namespace mars
                 // we have a heightfield
                 if(!node.terrain->pixelData)
                 {
-                    node.terrain->pixelData = (double*)calloc((node.terrain->width*node.terrain->height), sizeof(double));
+                    node.terrain->pixelData = (double*)calloc((node.terrain->width * node.terrain->height), sizeof(double));
                     //QImage image(QString::fromStdString(snode->filename));
                     int r = 0, g = 0, b = 0;
                     int count = 0;
@@ -255,9 +255,9 @@ namespace mars
             }
 
             //compute scale factor
-            double scaleX = (ex.x() != 0) ? node.visual_size.x() / ex.x() : 1;
-            double scaleY = (ex.y() != 0) ? node.visual_size.y() / ex.y() : 1;
-            double scaleZ = (ex.z() != 0) ? node.visual_size.z() / ex.z() : 1;
+            const double scaleX = (ex.x() != 0) ? node.visual_size.x() / ex.x() : 1.0;
+            const double scaleY = (ex.y() != 0) ? node.visual_size.y() / ex.y() : 1.0;
+            const double scaleZ = (ex.z() != 0) ? node.visual_size.z() / ex.z() : 1.0;
 
             //resize
             if(resize)

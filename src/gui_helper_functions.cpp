@@ -11,6 +11,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <mars_interfaces/snmesh.h>
 #include <mars_utils/mathUtils.h>
 
 namespace mars

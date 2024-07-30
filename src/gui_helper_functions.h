@@ -19,6 +19,11 @@
 
 namespace mars
 {
+    namespace interfaces
+    {
+        struct snmesh;
+    }
+
     namespace graphics
     {
 
