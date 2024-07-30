@@ -150,40 +150,39 @@ namespace mars
                                                  double pivotX, double pivotY,
                                                  double pivotZ)
         {
-            vector<int> indices;
-            vector<osg::Vec3> OSGvertices;
-            snmesh mesh;
-            //visitor for getting drawables inside node
-            GeodeVisitor visitor("PLACEHOLDER");
-            osg::Geode* geode;
-            osg::Node* tmpNode;
-            osg::ref_ptr<osg::Group> osgGroupFromRead = nullptr;
-            if ((osgGroupFromRead = node->asGroup()) == 0)
+            auto osgGroupFromRead = osg::ref_ptr<osg::Group>{node->asGroup()};
+            if (!osgGroupFromRead.valid())
             {
                 fprintf(stderr, "error\n");
             }
-            // todo: parse the tree recursive and search for drawables
+
+            // TODO: parse the tree recursive and search for drawables
+            vector<int> indices;
+            vector<osg::Vec3> OSGvertices;
             //get geometries of node
             int indexcounter = 0;
-            for (size_t m = 0; m < osgGroupFromRead->getNumChildren(); m++)
+            //visitor for getting drawables inside node
+            auto visitor = GeodeVisitor{"PLACEHOLDER"};
+            for (unsigned int m = 0; m < osgGroupFromRead->getNumChildren(); m++)
             {
-                tmpNode = osgGroupFromRead->getChild(m);
-
+                auto* const tmpNode = osgGroupFromRead->getChild(m);
                 tmpNode->accept(visitor);
-                if(!(geode = visitor.getNode()))
+
+                auto* const geode = visitor.getNode();
+                if(!geode)
                 {
                     fprintf(stderr, "ERROR: getting node for mesh\n");
                     continue;
                 }
-                for (size_t j = 0; j<geode->getNumDrawables(); j++)
+                for (unsigned int j = 0; j<geode->getNumDrawables(); j++)
                 {
                     //initialize functors for getting the drawables
                     osg::TriangleFunctor<GetVerticesFunctor> triangleFunctor_;
                     geode->getDrawable(j)->accept(triangleFunctor_);
 
                     //Here we get the triangles
-                    vector<osg::Vec3>& OSGverticestemp = triangleFunctor_.getVertices();
-                    for (unsigned int i = 0; i < OSGverticestemp.size(); i++)
+                    const auto& OSGverticestemp = triangleFunctor_.getVertices();
+                    for (size_t i = 0; i < OSGverticestemp.size(); i++)
                     {
                         OSGvertices.push_back(OSGverticestemp[i]);
                         indices.push_back(indexcounter);
@@ -192,38 +191,32 @@ namespace mars
                 }
             }
 
-            //store vertices in a mydVector3 structure
-            mars::interfaces::mydVector3 *vertices = 0;
-            if(OSGvertices.size() > 0)
-            {
-                vertices = new mars::interfaces::mydVector3[OSGvertices.size()];
-            }
-            //  dVector3 *normals = new dVector3[normals_x.size()];
-            int *indexarray = 0;
-            if(indices.size() > 0)
-            {
-                indexarray = new int[indices.size()];
-            }
+            snmesh mesh = [&](){
+                snmesh tmesh;
+                tmesh.vertexcount = OSGvertices.size();
+                if(OSGvertices.size() > 0)
+                {
+                    mesh.vertices = new mars::interfaces::mydVector3[OSGvertices.size()];
 
-            //convert osg vertice vector to standard array
-            for (size_t i = 0; i < OSGvertices.size(); i++)
-            {
-                vertices[i][0] = (OSGvertices[i][0] - pivotX) * scaleX;
-                vertices[i][1] = (OSGvertices[i][1] - pivotY) * scaleY;
-                vertices[i][2] = (OSGvertices[i][2] - pivotZ) * scaleZ;
-            }
+                    for (size_t i = 0; i < OSGvertices.size(); i++)
+                    {
+                        tmesh.vertices[i][0] = (OSGvertices[i][0] - pivotX) * scaleX;
+                        tmesh.vertices[i][1] = (OSGvertices[i][1] - pivotY) * scaleY;
+                        tmesh.vertices[i][2] = (OSGvertices[i][2] - pivotZ) * scaleZ;
+                    }
+                }
 
-            //construct an appropriate index array
-            for (int i = 0; i < indexcounter; i++)
-            {
-                indexarray[i] = indices[i];
-            }
+                tmesh.indexcount = indexcounter;
+                if(indices.size() > 0)
+                {
+                    tmesh.indices = new int[indices.size()];
 
-            mesh.vertices = vertices;
-            mesh.vertexcount = OSGvertices.size();
-            //  mesh.normals = normals;
-            mesh.indices = indexarray;
-            mesh.indexcount = indexcounter;
+                    std::copy(std::begin(indices), std::end(indices), tmesh.indices);
+                }
+
+                //  mesh.normals = new dVector3[normals_x.size()];
+                return tmesh;
+            }();
             return mesh;
         }
 
@@ -246,20 +239,11 @@ namespace mars
 
         std::vector<double> GuiHelper::getMeshSize(const std::string &filename)
         {
-            std::vector<double> r;
-            Vector size(0, 0, 0);
-            if(filename.substr(filename.size()-5, 5) == ".bobj")
-            {
-                size = getExtend(GuiHelper::readBobjFromFile(filename));
-            }
-            else
-            {
-                size = getExtend(GuiHelper::readNodeFromFile(filename));
-            }
-            r.push_back(size.x());
-            r.push_back(size.y());
-            r.push_back(size.z());
-            return r;
+            const auto size = (filename.substr(filename.size()-5, 5) == ".bobj") ? 
+                                  getExtend(GuiHelper::readBobjFromFile(filename))
+                                : getExtend(GuiHelper::readNodeFromFile(filename));
+
+            return std::vector<double>{{size.x(), size.y(), size.z()}};
         }
 
         void GuiHelper::getPhysicsFromMesh(mars::interfaces::NodeData* node)
