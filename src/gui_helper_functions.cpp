@@ -354,6 +354,7 @@ namespace mars
             tempnode.offset = node->visual_offset_pos;
             tempnode.r_off = node->visual_offset_rot;
 
+            node->mesh.freeMemory();
             node->mesh = GuiHelper::convertOsgNodeToSnMesh(tempnode.node.get(),
                                                            scaleX, scaleY, scaleZ,
                                                            node->pivot.x(),
