@@ -191,33 +191,33 @@ namespace mars
                 }
             }
 
-            snmesh mesh = [&](){
-                snmesh tmesh;
-                tmesh.vertexcount = OSGvertices.size();
+            return [&]()
+            {
+                snmesh mesh;
+                mesh.vertexcount = OSGvertices.size();
                 if(OSGvertices.size() > 0)
                 {
                     mesh.vertices = new mars::interfaces::mydVector3[OSGvertices.size()];
 
                     for (size_t i = 0; i < OSGvertices.size(); i++)
                     {
-                        tmesh.vertices[i][0] = (OSGvertices[i][0] - pivotX) * scaleX;
-                        tmesh.vertices[i][1] = (OSGvertices[i][1] - pivotY) * scaleY;
-                        tmesh.vertices[i][2] = (OSGvertices[i][2] - pivotZ) * scaleZ;
+                        mesh.vertices[i][0] = (OSGvertices[i][0] - pivotX) * scaleX;
+                        mesh.vertices[i][1] = (OSGvertices[i][1] - pivotY) * scaleY;
+                        mesh.vertices[i][2] = (OSGvertices[i][2] - pivotZ) * scaleZ;
                     }
                 }
 
-                tmesh.indexcount = indexcounter;
+                mesh.indexcount = indexcounter;
                 if(indices.size() > 0)
                 {
-                    tmesh.indices = new int[indices.size()];
+                    mesh.indices = new int[indices.size()];
 
-                    std::copy(std::begin(indices), std::end(indices), tmesh.indices);
+                    std::copy(std::begin(indices), std::end(indices), mesh.indices);
                 }
 
                 //  mesh.normals = new dVector3[normals_x.size()];
-                return tmesh;
+                return mesh;
             }();
-            return mesh;
         }
 
         Vector GuiHelper::getExtend(osg::Node *oGroup)
