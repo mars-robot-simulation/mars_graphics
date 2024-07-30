@@ -232,16 +232,16 @@ namespace mars
             osg::ComputeBoundsVisitor cbbv;
             oGroup->accept(cbbv);
             osg::BoundingBox bb = cbbv.getBoundingBox();
-            Vector ex;
-            // compute bounding box has to be done in this way
-            (fabs(bb.xMax()) > fabs(bb.xMin())) ? ex.x() = fabs(bb.xMax() - bb.xMin())
-                : ex.x() = fabs(bb.xMin() - bb.xMax());
-            (fabs(bb.yMax()) > fabs(bb.yMin())) ? ex.y() = fabs(bb.yMax() - bb.yMin())
-                : ex.y() = fabs(bb.yMin() - bb.yMax());
-            (fabs(bb.zMax()) > fabs(bb.zMin())) ? ex.z() = fabs(bb.zMax() - bb.zMin())
-                : ex.z() = fabs(bb.zMin() - bb.zMax());
 
-            return ex;
+            return Vector{  (fabs(bb.xMax()) > fabs(bb.xMin())) ?
+                              fabs(bb.xMax() - bb.xMin())
+                            : fabs(bb.xMin() - bb.xMax()),
+                            (fabs(bb.yMax()) > fabs(bb.yMin())) ?
+                              fabs(bb.yMax() - bb.yMin())
+                            : fabs(bb.yMin() - bb.yMax()),
+                            (fabs(bb.zMax()) > fabs(bb.zMin())) ?
+                              fabs(bb.zMax() - bb.zMin())
+                            : fabs(bb.zMin() - bb.zMax())};
         }
 
         std::vector<double> GuiHelper::getMeshSize(const std::string &filename)
@@ -277,65 +277,54 @@ namespace mars
         void GuiHelper::getPhysicsFromNode(mars::interfaces::NodeData* node,
                                            osg::ref_ptr<osg::Node> completeNode)
         {
-            osg::ref_ptr<osg::Group> myCreatedGroup;
-            osg::ref_ptr<osg::Group> myGroupFromRead;
-            osg::ref_ptr<osg::Geode> myGeodeFromRead;
-            nodemanager tempnode;
-            bool found = false;
             // check whether it is a osg::Group (.obj file)
             if(!completeNode.valid())
             {
-                throw std::runtime_error("cannot read node from file");
+                throw std::runtime_error{"cannot read node from file"};
             }
 
-            if((myGeodeFromRead = completeNode->asGeode()) != 0)
+            auto myCreatedGroup = osg::ref_ptr<osg::Group>{new osg::Group};
+            auto stateset = osg::ref_ptr<osg::StateSet>{myCreatedGroup->getOrCreateStateSet()};
+
+            if(auto myGeodeFromRead = osg::ref_ptr<osg::Geode>{completeNode->asGeode()})
             {
                 //if the node was read from a .stl-file it read as geode not as group
-                myCreatedGroup = new osg::Group();
-                osg::ref_ptr<osg::StateSet> stateset = myCreatedGroup->getOrCreateStateSet();
                 completeNode->setStateSet(stateset.get());
                 myCreatedGroup->addChild(completeNode.get());
             }
-            else if((myGroupFromRead = completeNode->asGroup()) != 0)
+            else if(auto myGroupFromRead = osg::ref_ptr<osg::Group>{completeNode->asGroup()})
             {
                 //go through the read node group and combine the parts of the actually
                 //handled node
-                myCreatedGroup = new osg::Group();
-                osg::ref_ptr<osg::StateSet> stateset = myCreatedGroup->getOrCreateStateSet();
-                for (unsigned int i = 0; i < myGroupFromRead->getNumChildren(); i ++)
+                bool found = false;
+                for (size_t i = 0; i < myGroupFromRead->getNumChildren(); i++)
                 {
-                    osg::ref_ptr<osg::Node> myTestingNode = myGroupFromRead->getChild(i);
-                    if (myTestingNode == 0)
+                    auto myTestingNode = osg::ref_ptr<osg::Node>{myGroupFromRead->getChild(i)};
+                    if (!myTestingNode.valid())
                     {
-                        return;
+                        return; // TODO: Is return here intentional? Continue? Error message?
                     }
-                    if (myTestingNode->getName() == node->origName or node->origName.size() == 0)
+                    if (myTestingNode->getName() == node->origName || node->origName.size() == 0)
                     {
                         myTestingNode->setStateSet(stateset.get());
                         myCreatedGroup->addChild(myTestingNode.get());
-                        found = true;
-                    } else
+                        found = true; // TODO: Why not break here? Why does it make sense to check the next node as well?
+                    }
+                    else
                     {
                         if (found)
                         {
                             break;
-                            found = false;
                         }
                     }
                 }
             }
+            else
+            {
+                throw std::runtime_error{"node is neither geode nor group"};
+            }
 
-            osg::ComputeBoundsVisitor cbbv;
-            myCreatedGroup.get()->accept(cbbv);
-            osg::BoundingBox bb = cbbv.getBoundingBox();
-            Vector ex;
-            // compute bounding box has to be done in this way
-            (fabs(bb.xMax()) > fabs(bb.xMin())) ? ex.x() = fabs(bb.xMax() - bb.xMin())
-                : ex.x() = fabs(bb.xMin() - bb.xMax());
-            (fabs(bb.yMax()) > fabs(bb.yMin())) ? ex.y() = fabs(bb.yMax() - bb.yMin())
-                : ex.y() = fabs(bb.yMin() - bb.yMax());
-            (fabs(bb.zMax()) > fabs(bb.zMin())) ? ex.z() = fabs(bb.zMax() - bb.zMin())
-                : ex.z() = fabs(bb.zMin() - bb.zMax());
+            const auto extend = getExtend(myCreatedGroup.get());
 
             if (node->map.find("loadSizeFromMesh") != node->map.end())
             {
@@ -343,48 +332,44 @@ namespace mars
                 {
                     Vector physicalScale;
                     utils::vectorFromConfigItem(&(node->map["physicalScale"][0]), &physicalScale);
-                    node->ext=Vector(ex.x()*physicalScale.x(), ex.y()*physicalScale.y(), ex.z()*physicalScale.z());
+                    node->ext = Vector{extend.x()*physicalScale.x(), extend.y()*physicalScale.y(), extend.z()*physicalScale.z()};
                 }
             }
 
             //compute scale factor
-            double scaleX = 1, scaleY = 1, scaleZ = 1;
-            if (ex.x() != 0) scaleX = node->ext.x() / ex.x();
-            if (ex.y() != 0) scaleY = node->ext.y() / ex.y();
-            if (ex.z() != 0) scaleZ = node->ext.z() / ex.z();
+            const double scaleX = extend.x() == 0 ? 1.0 : node->ext.x() / extend.x();
+            const double scaleY = extend.y() == 0 ? 1.0 : node->ext.y() / extend.y();
+            const double scaleZ = extend.z() == 0 ? 1.0 : node->ext.z() / extend.z();
 
             // create transform and group Node for the actual node
-            osg::ref_ptr<osg::PositionAttitudeTransform> transform;
-            osg::ref_ptr<osg::MatrixTransform> tx;
+            auto transform = osg::ref_ptr<osg::PositionAttitudeTransform>{new osg::PositionAttitudeTransform};
+            auto tx = osg::ref_ptr<osg::MatrixTransform>{new osg::MatrixTransform};
 
-            transform = new osg::PositionAttitudeTransform();
-            tx = new osg::MatrixTransform;
             tx->setMatrix(osg::Matrix::scale(scaleX, scaleY, scaleZ));
             tx->setDataVariance(osg::Node::STATIC);
             tx->addChild(myCreatedGroup.get());
 
             //add the node to a transformation to make him movable
             transform->addChild(tx.get());
-            transform->setPivotPoint(osg::Vec3(node->pivot.x()*scaleX,
+            transform->setPivotPoint(osg::Vec3{node->pivot.x()*scaleX,
                                                node->pivot.y()*scaleY,
-                                               node->pivot.z()*scaleZ));
-            transform->setPosition(osg::Vec3(node->pos.x() + node->visual_offset_pos.x(),
+                                               node->pivot.z()*scaleZ});
+            transform->setPosition(osg::Vec3{node->pos.x() + node->visual_offset_pos.x(),
                                              node->pos.y() + node->visual_offset_pos.y(),
-                                             node->pos.z() + node->visual_offset_pos.z()));
+                                             node->pos.z() + node->visual_offset_pos.z()});
             //set rotation
             osg::Quat oquat;
-            Quaternion qrot = node->rot * node->visual_offset_rot;
+            const auto qrot = node->rot * node->visual_offset_rot;
             oquat.set(qrot.x(), qrot.y(), qrot.z(), qrot.w());
             transform->setAttitude(oquat);
 
+            nodemanager tempnode;
             tempnode.transform = transform.get();
             tempnode.node = myCreatedGroup.get();
             tempnode.matrix = tx.get();
             tempnode.offset = node->visual_offset_pos;
             tempnode.r_off = node->visual_offset_rot;
 
-            constexpr bool free_memory = true;
-            node->mesh.setZero(free_memory);
             node->mesh = GuiHelper::convertOsgNodeToSnMesh(tempnode.node.get(),
                                                            scaleX, scaleY, scaleZ,
                                                            node->pivot.x(),
@@ -394,13 +379,14 @@ namespace mars
 
         osg::ref_ptr<osg::Node> GuiHelper::readNodeFromFile(string fileName)
         {
-            std::vector<nodeFileStruct>::iterator iter;
-
-            for(iter = GuiHelper::nodeFiles.begin();
-                iter != GuiHelper::nodeFiles.end(); iter++)
+            auto nodeItr = std::find_if(std::begin(nodeFiles), std::end(nodeFiles),
+                                        [&fileName](const nodeFileStruct& x)
+                                        { return x.fileName == fileName; });
+            if (nodeItr != std::end(nodeFiles))
             {
-                if((*iter).fileName == fileName) return (*iter).node;
+                return nodeItr->node;
             }
+
             nodeFileStruct newNodeFile;
             newNodeFile.fileName = fileName;
             newNodeFile.node = osgDB::readNodeFile(fileName);
@@ -411,14 +397,14 @@ namespace mars
 
         osg::ref_ptr<osg::Node> GuiHelper::readBobjFromFile(const std::string &filename)
         {
-
-            std::vector<nodeFileStruct>::iterator iter;
-
-            for(iter = GuiHelper::nodeFiles.begin();
-                iter != GuiHelper::nodeFiles.end(); iter++)
+            auto nodeItr = std::find_if(std::begin(nodeFiles), std::end(nodeFiles),
+                                        [&filename](const nodeFileStruct& x)
+                                        { return x.fileName == filename; });
+            if (nodeItr != std::end(nodeFiles))
             {
-                if((*iter).fileName == filename) return (*iter).node;
+                return nodeItr->node;
             }
+
             nodeFileStruct newNodeFile;
             newNodeFile.fileName = filename;
 
