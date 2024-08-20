@@ -263,13 +263,13 @@ namespace mars
             if(resize)
             {
                 drawObject_->getScaleMatrix()->setMatrix(osg::Matrix::scale(scaleX, scaleY, scaleZ));
-                drawObject_->getTransform()->setPivotPoint(osg::Vec3{
-                                                               node.pivot.x()*scaleX, node.pivot.y()*scaleY, node.pivot.z()*scaleZ});
+                drawObject_->getTransform()->setPivotPoint(osg::Vec3(
+                                                               node.pivot.x()*scaleX, node.pivot.y()*scaleY, node.pivot.z()*scaleZ));
             }
-            drawObject_->getTransform()->setPosition(osg::Vec3{
+            drawObject_->getTransform()->setPosition(osg::Vec3(
                                                          node.pos.x()+node.visual_offset_pos.x(),
                                                          node.pos.y()+node.visual_offset_pos.y(),
-                                                         node.pos.z()+node.visual_offset_pos.z()});
+                                                         node.pos.z()+node.visual_offset_pos.z()));
             oquat.set(node.rot.x(), node.rot.y(), node.rot.z(), node.rot.w());
             drawObject_->getTransform()->setAttitude(oquat);
         }

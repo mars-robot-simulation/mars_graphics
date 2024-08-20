@@ -336,12 +336,12 @@ namespace mars
 
             //add the node to a transformation to make him movable
             transform->addChild(tx.get());
-            transform->setPivotPoint(osg::Vec3{node->pivot.x()*scaleX,
+            transform->setPivotPoint(osg::Vec3(node->pivot.x()*scaleX,
                                                node->pivot.y()*scaleY,
-                                               node->pivot.z()*scaleZ});
-            transform->setPosition(osg::Vec3{node->pos.x() + node->visual_offset_pos.x(),
+                                               node->pivot.z()*scaleZ));
+            transform->setPosition(osg::Vec3(node->pos.x() + node->visual_offset_pos.x(),
                                              node->pos.y() + node->visual_offset_pos.y(),
-                                             node->pos.z() + node->visual_offset_pos.z()});
+                                             node->pos.z() + node->visual_offset_pos.z()));
             //set rotation
             osg::Quat oquat;
             const auto qrot = node->rot * node->visual_offset_rot;

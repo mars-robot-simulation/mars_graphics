@@ -618,9 +618,9 @@ namespace mars
                 }
             }
 
-            myFog->setColor(osg::Vec4{graphicOptions.fogColor.r,
+            myFog->setColor(osg::Vec4(graphicOptions.fogColor.r,
                                       graphicOptions.fogColor.g,
-                                      graphicOptions.fogColor.b, 1.0});
+                                      graphicOptions.fogColor.b, 1.0));
             myFog->setStart(graphicOptions.fogStart);
             myFog->setEnd(graphicOptions.fogEnd);
             myFog->setDensity(graphicOptions.fogDensity);
@@ -870,11 +870,11 @@ namespace mars
                         auto pos = drawObjectItr->second->object()->getPosition();
                         const auto& q = drawObjectItr->second->object()->getQuaternion();
                         myLights[i].lStruct.pos = pos;
-                        myLights[i].light->setPosition(osg::Vec4{pos.x(), pos.y(), pos.z()+0.1, 1.0});
+                        myLights[i].light->setPosition(osg::Vec4(pos.x(), pos.y(), pos.z()+0.1, 1.0));
                         // Set direction
                         pos = q*Vector{1, 0, 0};
                         myLights[i].lStruct.lookAt = pos;
-                        myLights[i].light->setDirection(osg::Vec3{pos.x(), pos.y(), pos.z()});
+                        myLights[i].light->setDirection(osg::Vec3(pos.x(), pos.y(), pos.z()));
                     }
                     else if(myLights[i].lStruct.node != "")
                     {
@@ -1752,7 +1752,7 @@ namespace mars
             transformCoords = new osg::PositionAttitudeTransform{};
             transformCoords->addChild(positionedCoords.get());
             transformCoords->setAttitude(osg::Quat{rot.x(), rot.y(), rot.z(), rot.w()});
-            transformCoords->setPosition(osg::Vec3{pos.x(), pos.y(), pos.z()});
+            transformCoords->setPosition(osg::Vec3(pos.x(), pos.y(), pos.z()));
             scene->addChild(transformCoords.get());
 
             show_coords = true;
@@ -1919,7 +1919,7 @@ namespace mars
         unsigned long GraphicsManager::addHUDElement(hudElementStruct *he)
         {
             const unsigned long id = next_hud_id++;
-            auto elem = osg::ref_ptr<OSGHudElementStruct>{new OSGHudElementStruct{*he, resources_path.sValue, id}};
+            auto elem = osg::ref_ptr<OSGHudElementStruct>(new OSGHudElementStruct(*he, resources_path.sValue, id));
             if(!elem)
             {
                 return 0;
@@ -1961,7 +1961,7 @@ namespace mars
             const unsigned long id = next_hud_id++;
             hudElementStruct he;
             he.type = HUD_ELEMENT_OSGNODE;
-            auto elem = osg::ref_ptr<OSGHudElementStruct>{new OSGHudElementStruct{he, resources_path.sValue, id, static_cast<osg::Node*>(node)}};
+            auto elem = osg::ref_ptr<OSGHudElementStruct>(new OSGHudElementStruct(he, resources_path.sValue, id, static_cast<osg::Node*>(node)));
             if(!elem)
             {
                 return 0;
@@ -3369,7 +3369,7 @@ namespace mars
             for(auto& selectedObject: selectedObjects_)
             {
                 const auto& p = selectedObject->object()->getPosition();
-                return osg::Vec3f{p.x(), p.y(), p.z()};
+                return osg::Vec3(p.x(), p.y(), p.z());
                 // TODO: multiple selections?
             }
         }

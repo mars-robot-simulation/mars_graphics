@@ -90,7 +90,7 @@ namespace mars
             scaleTransform_->setDataVariance(osg::Node::STATIC);
 
             posTransform_ = new osg::PositionAttitudeTransform;
-            posTransform_->setPivotPoint(osg::Vec3{pivot_.x(), pivot_.y(), pivot_.z()});
+            posTransform_->setPivotPoint(osg::Vec3(pivot_.x(), pivot_.y(), pivot_.z()));
             posTransform_->setPosition(osg::Vec3{});
             posTransform_->addChild(scaleTransform_.get());
             posTransform_->setNodeMask(nodeMask_);
@@ -237,7 +237,8 @@ namespace mars
         void DrawObject::setPosition(const Vector &_pos)
         {
             position_ = _pos;
-            posTransform_->setPosition(osg::Vec3{position_.x(), position_.y(), position_.z()});
+
+            posTransform_->setPosition(osg::Vec3(position_.x(), position_.y(), position_.z()));
             if(frame)
             {
                 frame->setPosition(position_.x(), position_.y(), position_.z());
@@ -260,8 +261,8 @@ namespace mars
         {
             scaleTransform_->setMatrix(osg::Matrix::scale(
                                            scale.x(), scale.y(), scale.z()));
-            posTransform_->setPivotPoint(osg::Vec3{
-                                             pivot_.x()*scale.x(), pivot_.y()*scale.y(), pivot_.z()*scale.z()});
+            posTransform_->setPivotPoint(osg::Vec3(
+                                             pivot_.x()*scale.x(), pivot_.y()*scale.y(), pivot_.z()*scale.z()));
             scaledSize_ = Vector{
                 scale.x() * geometrySize_.x(),
                 scale.y() * geometrySize_.y(),
@@ -270,10 +271,10 @@ namespace mars
 
         void DrawObject::setScaledSize(const Vector &scaledSize)
         {
-            setScale(Vector{
+            setScale(Vector(
                          scaledSize.x() / geometrySize_.x(),
                          scaledSize.y() / geometrySize_.y(),
-                         scaledSize.z() / geometrySize_.z()});
+                         scaledSize.z() / geometrySize_.z()));
         }
 
         void DrawObject::removeBits(unsigned int bits)
