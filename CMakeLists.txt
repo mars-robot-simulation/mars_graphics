@@ -63,14 +63,20 @@ set(DEPENDENCIES
     openscenegraph-osgUtil
 )
 
-pkg_check_modules(OSGQT openscenegraph-osgQt)
-if(OSGQT_FOUND)
-    list(APPEND DEPENDENCIES openscenegraph-osgQt)
-endif()
-pkg_check_modules(Dependencies REQUIRED IMPORTED_TARGET ${DEPENDENCIES})
-
 set (QT_USE_QTOPENGL TRUE)
 setup_qt()
+
+if (${USE_QT5})
+set( OSG_QT openscenegraph-osgQt5)
+else (${USE_QT5})
+set( OSG_QT openscenegraph-osgQt)
+endif (${USE_QT5})
+
+pkg_check_modules(OSGQT ${OSG_QT})
+if(OSGQT_FOUND)
+    list(APPEND DEPENDENCIES ${OSG_QT})
+endif()
+pkg_check_modules(Dependencies REQUIRED IMPORTED_TARGET ${DEPENDENCIES})
 
 set(HEADERS
            src/GraphicsCamera.h
@@ -187,7 +193,7 @@ endif (${USE_QT5})
 
 if(APPLE)
  FIND_LIBRARY(OPENGL_LIBRARY OpenGL)
- SET(APPLE_LIBS ${OPENGL_LIBRARY} -L/opt/local/lib opencv_core opencv_highgui opencv_imgproc)
+ SET(APPLE_LIBS ${OPENGL_LIBRARY} -L/opt/local/lib opencv_core opencv_highgui opencv_imgproc opencv_imgcodecs)
 endif(APPLE)
 
 if(WIN32)
