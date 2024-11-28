@@ -43,7 +43,7 @@ namespace mars
       texScaleY(texScaleY)
     {
 
-        maxNumSubTiles = 100;
+        maxNumSubTiles = 1000;
         heightData = nullptr;
         numSubTiles = 0;
         prepare();
@@ -887,13 +887,13 @@ namespace mars
                     index = tile->verticesArrayOffset+y*getHighResVertexCntX()+x;
                     v = vertices+index;
                     v->position[2] = tile->heightData[y][x] * scaleZ;
-          
+
                     getNormal(x, y, getHighResCellCntX(), getHighResCellCntY(),
                               highStepX, highStepY,
                               tile->heightData,
                               vertices[index].normal,
                               vertices[index].tangent, true);
-          
+
                 }
             }
             glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -1169,4 +1169,4 @@ namespace mars
 
 } // namespace mars
 
-#endif
+#endif!
