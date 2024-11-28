@@ -133,18 +133,19 @@ namespace mars
                 // we have a heightfield
                 if(!node.terrain->pixelData)
                 {
-                    node.terrain->pixelData = (double*)calloc((node.terrain->width * node.terrain->height), sizeof(double));
-                    //QImage image(QString::fromStdString(snode->filename));
-                    int r = 0, g = 0, b = 0;
-                    int count = 0;
-                    for(int y=0; y<node.terrain->height; y++)
-                    {
-                        for(int x=0; x<node.terrain->width; x++)
-                        {
-                            //convert to greyscale by common used scale
-                            node.terrain->pixelData[count++] = ((r*0.3+g*0.59+b*0.11)/255.0);
-                        }
-                    }
+                    fprintf(stderr, "ERROR: mars_graphics: wrapper/OSGNodeStruct: no pixel data giver for terrain node.\n");
+                    // node.terrain->pixelData = (double*)calloc((node.terrain->width * node.terrain->height), sizeof(double));
+                    // //QImage image(QString::fromStdString(snode->filename));
+                    // int r = 0, g = 0, b = 0;
+                    // int count = 0;
+                    // for(int y=0; y<node.terrain->height; y++)
+                    // {
+                    //     for(int x=0; x<node.terrain->width; x++)
+                    //     {
+                    //         //convert to greyscale by common used scale
+                    //         node.terrain->pixelData[count++] = ((r*0.3+g*0.59+b*0.11)/255.0);
+                    //     }
+                    // }
                 }
                 if(map.hasKey("t_grid"))
                 {
