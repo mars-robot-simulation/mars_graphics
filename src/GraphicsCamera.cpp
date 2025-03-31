@@ -92,6 +92,7 @@ namespace mars
             isoMinHeight = 2;
             isoMaxHeight = 20;
             logTrackingRotation = false;
+            mainCamera->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
         }
 
         GraphicsCamera::~GraphicsCamera(void)
@@ -104,13 +105,42 @@ namespace mars
             osg::Matrix projection;
             float aspectRatio = static_cast<float>(width)/static_cast<float>(height);
 
-            projection.makePerspective(50.0f, aspectRatio, MY_ZNEAR, MY_ZFAR);
+            projection.makePerspective(50.0f, aspectRatio, f_nearPlane, f_farPlane);
             if(!l_settings)
             {
                 mainCamera->setProjectionMatrix(projection);
                 //if(hudCamera) hudCamera->setProjectionMatrix(projection);
             }
             camType = 1;
+        }
+
+        void GraphicsCamera::setZNear(double v)
+        {
+            f_nearPlane = v;
+        }
+
+        void GraphicsCamera::setZFar(double v)
+        {
+            f_farPlane = v;
+        }
+
+        void GraphicsCamera::setNoZCompute(bool v)
+        {
+            if(v)
+            {
+                mainCamera->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
+                if(camType == 1)
+                {
+                    changeCameraTypeToPerspective();
+                } else if(camType == 2)
+                {
+                    changeCameraTypeToOrtho();
+                }
+
+            } else
+            {
+                mainCamera->setComputeNearFarMode(osg::CullSettings::COMPUTE_NEAR_FAR_USING_BOUNDING_VOLUMES);
+            }
         }
 
         void GraphicsCamera::changeCameraTypeToOrtho()

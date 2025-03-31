@@ -403,7 +403,7 @@ namespace mars
             cfg_manager::cfgPropertyStruct grab_frames;
             cfg_manager::cfgPropertyStruct resources_path;
             cfg_manager::cfgPropertyStruct configPath;
-            cfg_manager::cfgPropertyStruct shadowSamples;
+            cfg_manager::cfgPropertyStruct shadowSamples, zNear, zFar, noZCompute;
             int ignore_next_resize;
             bool set_window_prop;
             osg::ref_ptr<osg::CullFace> cull;

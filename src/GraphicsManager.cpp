@@ -245,6 +245,9 @@ namespace mars
                     vsyncProp = cfg->getOrCreateProperty("Graphics",
                                                          "vsync",
                                                          false, this);
+                    zNear = cfg->getOrCreateProperty("Graphics", "zNear", 0.01, this);
+                    zFar = cfg->getOrCreateProperty("Graphics", "zFar", 1000.0, this);
+                    noZCompute = cfg->getOrCreateProperty("Graphics", "noZCompute", false, this);
                 }
                 else
                 {
@@ -693,6 +696,10 @@ namespace mars
             activeWindow = gw;
             gw->setName(name);
             gw->setClearColor(graphicOptions.clearColor);
+            auto* const gc = dynamic_cast<GraphicsCamera*>(gw->getCameraInterface());
+            gc->setZNear(zNear.dValue);
+            gc->setZFar(zFar.dValue);
+            gc->setNoZCompute(noZCompute.bValue);
             viewer->addView(gw->getView());
             graphicsWindows.push_back(gw);
 

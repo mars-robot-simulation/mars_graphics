@@ -110,6 +110,10 @@ namespace mars
             virtual double getMoveSpeed() {return (double)moveSpeed;}
             virtual void setMoveSpeed(double s) {moveSpeed = (float)s;}
 
+            void setZNear(double v);
+            void setZFar(double v);
+            void setNoZCompute(bool v);
+
         private:
             void calcEyeSep(void);
             // for vibot we need some extensions
