@@ -25,7 +25,7 @@ namespace mars
         class ParallelSplitShadowMap :  public osgShadow::ShadowTechnique
         {
         public:
-            ParallelSplitShadowMap(osg::Geode** debugGroup=nullptr, int icountplanes=3);
+            ParallelSplitShadowMap(osg::Geode** debugGroup=nullptr, int icountplanes=3, int textureResolution=1024);
 
             ParallelSplitShadowMap(const ParallelSplitShadowMap& es, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY);
 
@@ -107,7 +107,6 @@ namespace mars
 
             /** get split calculation mode */
             inline SplitCalcMode getSplitCalculationMode() const { return _SplitCalcMode; }
-
 
             /** Resize any per context GLObject buffers to specified size. */
             virtual void resizeGLObjectBuffers(unsigned int maxSize);
@@ -209,6 +208,7 @@ namespace mars
             osg_lines::Lines *l;
             bool isInit;
             bool haveLines;
+            int textureResolution;
         };
     }
 }

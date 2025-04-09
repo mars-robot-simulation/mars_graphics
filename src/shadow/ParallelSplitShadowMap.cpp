@@ -61,11 +61,11 @@ namespace mars
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
 
         //////////////////////////////////////////////////////////////////////////
-        ParallelSplitShadowMap::ParallelSplitShadowMap(osg::Geode** gr, int icountplanes) :
+        ParallelSplitShadowMap::ParallelSplitShadowMap(osg::Geode** gr, int icountplanes, int textureResolution) :
             _textureUnitOffset(1),
             _debug_color_in_GLSL(false),
             _user_polgyonOffset_set(false),
-            _resolution(TEXTURE_RESOLUTION),
+            _resolution(textureResolution),
             _setMaxFarDistance(10000.0),
             _isSetMaxFarDistance(false),
             _split_min_near_dist(ZNEAR_MIN_FROM_LIGHT_SOURCE),
@@ -75,7 +75,8 @@ namespace mars
             _ambientBiasUniform(nullptr),
             _ambientBias(0.1f,0.3f),
             isInit(false),
-            haveLines(true)
+            haveLines(true),
+            textureResolution(textureResolution)
         {
             _displayTexturesGroupingNode = gr;
             _number_of_splits = icountplanes;
@@ -107,6 +108,7 @@ namespace mars
             _SplitCalcMode(copy._SplitCalcMode),
             _ambientBiasUniform(nullptr),
             _ambientBias(copy._ambientBias),
+            textureResolution(copy.textureResolution),
             isInit(false),
             haveLines(true)
         {
@@ -351,7 +353,7 @@ namespace mars
                     {
                         pssmShadowSplitTexture._debug_textureUnit = 1;
                         pssmShadowSplitTexture._debug_texture = new osg::Texture2D;
-                        pssmShadowSplitTexture._debug_texture->setTextureSize(TEXTURE_RESOLUTION, TEXTURE_RESOLUTION);
+                        pssmShadowSplitTexture._debug_texture->setTextureSize(textureResolution, textureResolution);
 #ifdef SHOW_SHADOW_TEXTURE_DEBUG
                         pssmShadowSplitTexture._debug_texture->setInternalFormat(GL_DEPTH_COMPONENT);
                         pssmShadowSplitTexture._debug_texture->setShadowTextureMode(osg::Texture2D::LUMINANCE);
@@ -368,7 +370,7 @@ namespace mars
                         pssmShadowSplitTexture._debug_camera->setComputeNearFarMode(osg::Camera::DO_NOT_COMPUTE_NEAR_FAR);
 
                         // set viewport
-                        pssmShadowSplitTexture._debug_camera->setViewport(0,0,TEXTURE_RESOLUTION,TEXTURE_RESOLUTION);
+                        pssmShadowSplitTexture._debug_camera->setViewport(0,0,textureResolution,textureResolution);
                         // set the camera to render before the main camera.
                         pssmShadowSplitTexture._debug_camera->setRenderOrder(osg::Camera::PRE_RENDER);
                         // tell the camera to use OpenGL frame buffer object where supported.

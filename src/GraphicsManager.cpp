@@ -232,6 +232,9 @@ namespace mars
                     shadowTextureSize = cfg->getOrCreateProperty("Graphics",
                                                                  "shadowTextureSize",
                                                                  2048, this);
+                    shadowSubTextureSize = cfg->getOrCreateProperty("Graphics",
+                                                                    "shadowSubTextureSize",
+                                                                    1024, this);
                     shadowSamples = cfg->getOrCreateProperty("Graphics",
                                                              "shadowSamples",
                                                              1, this);
@@ -341,8 +344,7 @@ namespace mars
                     // TODO: it shoud be fine to use setShadowTechnique here but somehow it is not working
                     if(shadowTechnique.sValue == "pssm")
                     {
-                        pssm = new ParallelSplitShadowMap(nullptr, NUM_PSSM_SPLITS);
-
+                        pssm = new ParallelSplitShadowMap(nullptr, NUM_PSSM_SPLITS, shadowSubTextureSize.iValue);
                         //pssm->enableShadowGLSLFiltering(false);
                         pssm->setTextureResolution(shadowTextureSize.iValue);
                         pssm->setMinNearDistanceForSplits(0);
@@ -3030,7 +3032,7 @@ namespace mars
             bool useShader = false;
             if(!pssm.valid())
             {
-                pssm = new ParallelSplitShadowMap{nullptr, NUM_PSSM_SPLITS};
+                pssm = new ParallelSplitShadowMap{nullptr, NUM_PSSM_SPLITS, shadowSubTextureSize.iValue};
 
                 //pssm->enableShadowGLSLFiltering(false);
                 pssm->setTextureResolution(shadowTextureSize.iValue);

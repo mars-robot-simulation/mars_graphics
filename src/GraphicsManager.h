@@ -397,7 +397,7 @@ namespace mars
             cfg_manager::cfgPropertyStruct draw_normals, drawRain, drawSnow,
                 multisamples, noiseProp, brightness, noiseAmmount, marsShader, backfaceCulling,
                 drawLineLaserProp, drawMainCamera, marsShadow, hudWidthProp,
-                hudHeightProp, defaultMaxNumNodeLights, shadowTextureSize,
+                hudHeightProp, defaultMaxNumNodeLights, shadowTextureSize, shadowSubTextureSize,
                 showGridProp, showCoordsProp, showSelectionProp, vsyncProp, showFramesProp, scaleFramesProp,
                 shadowTechnique;
             cfg_manager::cfgPropertyStruct grab_frames;
