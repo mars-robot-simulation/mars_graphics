@@ -241,6 +241,7 @@ namespace mars
         }
 
         // handle new footprints
+        mutex.lock();
         while(!footPrints.empty())
         {
             FootPrint handlePrint = footPrints.front();
@@ -248,6 +249,7 @@ namespace mars
             collideSphereI(handlePrint.x, handlePrint.y,
                            handlePrint.z, handlePrint.r);
         }
+        mutex.unlock();
 
         render(false);
 
@@ -603,7 +605,9 @@ namespace mars
                                                   double zPos, double radius)
     {
         FootPrint newFootPrint = {xPos, yPos, zPos, radius};
+        mutex.lock();
         footPrints.push_back(newFootPrint);
+        mutex.unlock();
     }
 
     void MultiResHeightMapRenderer::collideSphereI(double xPos, double yPos,

@@ -19,6 +19,8 @@ GLEW_FUN_EXPORT PFNGLUNMAPBUFFERPROC glUnmapBuffer;
 #include <map>
 #include <list>
 
+#include <mars_utils/Mutex.h>
+
 namespace mars
 {
 
@@ -121,6 +123,7 @@ namespace mars
         double offset[3];
         double minX, minY, minZ, maxX, maxY, maxZ;
         bool wireframe, solid, highWireframe, highSolid;
+        utils::Mutex mutex;
 
         std::map<int, SubTile*> subTiles;
         std::list<SubTile*> listSubTiles;
