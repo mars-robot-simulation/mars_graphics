@@ -293,6 +293,7 @@ namespace mars
             std::vector<osg::Node*> pickedObjects;
             enum PickMode { DISABLED, STANDARD, FORCE_ADD, FORCE_REMOVE, SINGLE };
             PickMode pickmode;
+            bool brushmode;
 
             virtual void initialize() {};
             virtual osg::ref_ptr<osg::GraphicsContext> createWidgetContext(
@@ -318,6 +319,7 @@ namespace mars
             void translateKey(int& key, unsigned int& mod);
 
             bool pick(const double x, const double y);
+            bool brushTest(double x, double y);
 
             virtual void setWidgetFullscreen(bool val) {};
 
