@@ -72,6 +72,7 @@ namespace mars
             cameraEyeSeparation = 0.1;
             mouseX = mouseY = 0;
             pickmode = DISABLED;
+            brushmode = false;
 
             this->scene = scene;
             view = new osgViewer::View;
