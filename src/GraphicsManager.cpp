@@ -10,6 +10,7 @@
 #include <osgParticle/SmokeEffect>
 #include <osgParticle/SmokeTrailEffect>
 #include <osgParticle/FireEffect>
+#include <osg/TexMat>
 
 #include <mars_utils/misc.h>
 
@@ -43,7 +44,6 @@
 
 using namespace osg_material_manager;
 using namespace configmaps;
-
 
 namespace mars
 {
@@ -762,7 +762,7 @@ namespace mars
 
         GraphicsWindowInterface* GraphicsManager::get3DWindow(unsigned long id) const
         {
-            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows),
                                         [id](GraphicsWidget* w){ return w->getID() == id;});
             if (gwItr == std::end(graphicsWindows))
             {
@@ -774,7 +774,7 @@ namespace mars
 
         GraphicsWindowInterface* GraphicsManager::get3DWindow(const std::string &name) const
         {
-            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows),
                                         [&name](GraphicsWidget* w){ return w->getName() == name;});
             if (gwItr == std::end(graphicsWindows))
             {
@@ -787,7 +787,7 @@ namespace mars
 
         void GraphicsManager::remove3DWindow(unsigned long id)
         {
-            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows),
                                         [id](GraphicsWidget* w){ return w->getID() == id;});
             if (gwItr == std::end(graphicsWindows))
             {
@@ -801,7 +801,7 @@ namespace mars
 
         void GraphicsManager::removeGraphicsWidget(unsigned long id)
         {
-            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows),
                                         [id](GraphicsWidget* w){ return w->getID() == id;});
             if (gwItr == std::end(graphicsWindows))
             {
@@ -817,7 +817,7 @@ namespace mars
 
         GraphicsWidget* GraphicsManager::getGraphicsWindow(unsigned long id) const
         {
-            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+            auto gwItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows),
                                         [id](GraphicsWidget* w){ return w->getID() == id;});
             if (gwItr == std::end(graphicsWindows))
             {
@@ -872,7 +872,7 @@ namespace mars
                     const auto& drawID = myLights[i].lStruct.drawID;
                     if(drawID != 0)
                     {
-                        auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
+                        auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_),
                                                             [&drawID](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x)
                                                             { return x.first == drawID; });
                         // Set position
@@ -888,7 +888,7 @@ namespace mars
                     else if(myLights[i].lStruct.node != "")
                     {
                         const auto& nodeName = myLights[i].lStruct.node;
-                        auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
+                        auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_),
                                                             [&nodeName](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x)
                                                             { return x.second->name() == nodeName; });
                         myLights[i].lStruct.drawID = drawObjectItr->first;
@@ -978,7 +978,7 @@ namespace mars
 
         void* GraphicsManager::getQTWidget(unsigned long id) const
         {
-            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows),
                                                     [id](GraphicsWidget* const x) { return x->getID() == id; });
 
             if (graphicsWindowItr == std::end(graphicsWindows))
@@ -991,7 +991,7 @@ namespace mars
 
         void GraphicsManager::showQTWidget(unsigned long id)
         {
-            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows),
                                                     [id](GraphicsWidget* const x) { return x->getID() == id; });
 
             if (graphicsWindowItr == std::end(graphicsWindows))
@@ -1006,7 +1006,7 @@ namespace mars
                                                         int top, int left,
                                                         int width, int height)
         {
-            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows),
                                                     [id](GraphicsWidget* const x) { return x->getID() == id; });
 
             if (graphicsWindowItr == std::end(graphicsWindows))
@@ -1021,7 +1021,7 @@ namespace mars
                                                         int *top, int *left,
                                                         int *width, int *height) const
         {
-            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows), 
+            auto graphicsWindowItr = std::find_if(  std::begin(graphicsWindows), std::end(graphicsWindows),
                                                     [id](GraphicsWidget* const x) { return x->getID() == id; });
 
             if (graphicsWindowItr == std::end(graphicsWindows))
@@ -1162,7 +1162,7 @@ namespace mars
 
         unsigned long GraphicsManager::getDrawID(const std::string &name) const
         {
-            auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
+            auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_),
                                                 [&name](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x) { return x.second->name() == name; });
             if (drawObjectItr == std::end(drawObjects_))
             {
@@ -1175,7 +1175,7 @@ namespace mars
         void GraphicsManager::removeDrawObject(unsigned long id)
         {
             auto* const ns = findDrawObject(id);
-            if(ns == nullptr) 
+            if(ns == nullptr)
             {
                 return;
             }
@@ -1239,7 +1239,7 @@ namespace mars
         void GraphicsManager::setDrawObjectPos(unsigned long id, const Vector &pos)
         {
             auto* const ns = findDrawObject(id);
-            if(ns == nullptr) 
+            if(ns == nullptr)
             {
                 return;
             }
@@ -1421,7 +1421,7 @@ namespace mars
 
         void GraphicsManager::removeDrawItems(DrawInterface *iface)
         {
-            auto drawMapperItr = std::find_if(  std::begin(draws), std::end(draws), 
+            auto drawMapperItr = std::find_if(  std::begin(draws), std::end(draws),
                                                 [iface](const drawMapper& x) { return x.ds.ptr_draw == iface; });
             if (drawMapperItr == std::end(draws))
             {
@@ -1500,8 +1500,8 @@ namespace mars
                     // it on update
                     lm.lStruct.node << ls.map["nodeName"];
                     const auto& nodeName = lm.lStruct.node;
-                    auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
-                                                        [&nodeName](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x) 
+                    auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_),
+                                                        [&nodeName](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x)
                                                         { return x.second->name() == nodeName; });
                     if (drawObjectItr != std::end(drawObjects_))
                     {
@@ -1646,8 +1646,8 @@ namespace mars
                     else if(utils::matchPattern("*/nodeName", key))
                     {
                         myLights[i].lStruct.node = value;
-                        auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_), 
-                                                            [&value](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x) 
+                        auto drawObjectItr = std::find_if(  std::begin(drawObjects_), std::end(drawObjects_),
+                                                            [&value](const std::pair<unsigned long, osg::ref_ptr<OSGNodeStruct>>& x)
                                                             { return x.second->name() == value; });
                         if (drawObjectItr != std::end(drawObjects_))
                         {
@@ -1957,7 +1957,7 @@ namespace mars
             }
 
             auto hudElementItr = std::find_if(  std::begin(hudElements), std::end(hudElements),
-                                                [&elem](const osg::ref_ptr<OSGHudElementStruct>& x) 
+                                                [&elem](const osg::ref_ptr<OSGHudElementStruct>& x)
                                                 { return x->getHUDElement() == elem; });
             if (hudElementItr != std::end(hudElements))
             {
@@ -1975,7 +1975,7 @@ namespace mars
             {
                 return 0;
             }
-            
+
             hudElements.push_back(elem);
             for (auto& graphicsWindow: graphicsWindows)
             {
@@ -1986,8 +1986,8 @@ namespace mars
 
         HUDElement* GraphicsManager::findHUDElement(unsigned long id) const
         {
-            auto hudElementItr = std::find_if(  std::begin(hudElements), std::end(hudElements), 
-                                                [&id](const osg::ref_ptr<OSGHudElementStruct>& x) 
+            auto hudElementItr = std::find_if(  std::begin(hudElements), std::end(hudElements),
+                                                [&id](const osg::ref_ptr<OSGHudElementStruct>& x)
                                                 { return x->getHUDElement()->getID() == id; });
             if (hudElementItr == std::end(hudElements))
             {
@@ -3430,6 +3430,165 @@ namespace mars
                                           int callbackParam)
         {
             dbPackageMapping.writePackage(dbPackage);
+        }
+
+        void GraphicsManager::brushTest(Vector start_, Vector end)
+        {
+            osg::Vec3 start = osg::Vec3(start_.x(), start_.y(), start_.z());
+            osg::ref_ptr<osgUtil::LineSegmentIntersector> intersector = new osgUtil::LineSegmentIntersector(start, osg::Vec3(end.x(), end.y(), end.z()));
+            osgUtil::IntersectionVisitor iv(intersector.get());
+
+            osgUtil::LineSegmentIntersector::Intersections intersections;
+            shadowedScene->accept(iv);
+            if(intersector->containsIntersections())
+            {
+                osgUtil::LineSegmentIntersector::Intersections& intersections = intersector->getIntersections();
+                osg::Vec2 tc(0.5f,0.5f);
+
+                // use the nearest intersection
+                // todo: test this
+                //osg::Vec3 tc;
+                //osg::Texture* activeTexture = intersection->getTextureLookUp(tc);
+                std::vector<osgUtil::LineSegmentIntersector::Intersection> intersections2;
+                osgUtil::LineSegmentIntersector::Intersection intersection;
+                double minZ = 10.0;
+                for(auto i: intersections)
+                {
+                    osg::Vec3 v;
+                    v = i.getWorldIntersectPoint()-start;
+                    //fprintf(stderr, "ray: %g %g %g\n\n", v.x(), v.y(), v.z());
+                    if(v.length() < minZ)
+                    {
+                        minZ = v.length();
+                        intersection = i;
+                    }
+                }
+                if(minZ > 1.0) return;
+                for(auto i: intersections)
+                {
+                    osg::Vec3 v = i.getWorldIntersectPoint()-start;
+                    if(v.length() <= minZ+0.0001)
+                    {
+                        intersections2.push_back(i);
+                    }
+                }
+                for(auto intersection: intersections2)
+                {
+                    //osgUtil::LineSegmentIntersector::Intersection intersection = intersector->getFirstIntersection();//*(intersections.begin());
+                    osg::Vec3 vi = intersection.getLocalIntersectPoint();
+                    //fprintf(stderr, "selected loca: %g %g %g\n", vi.x(), vi.y(), vi.z());
+                    vi = intersection.getWorldIntersectPoint();
+                    //fprintf(stderr, "selected world: %g %g %g\n\n", vi.x(), vi.y(), vi.z());
+                    osg::Drawable* drawable = intersection.drawable.get();
+                    osg::Geometry* geometry = drawable ? drawable->asGeometry() : 0;
+                    osg::Vec3Array* vertices = geometry ? dynamic_cast<osg::Vec3Array*>(geometry->getVertexArray()) : 0;
+                    if (vertices)
+                    {
+                        // get the vertex indices.
+                        const osgUtil::LineSegmentIntersector::Intersection::IndexList& indices = intersection.indexList;
+                        const osgUtil::LineSegmentIntersector::Intersection::RatioList& ratios = intersection.ratioList;
+
+                        if (indices.size()==3 && ratios.size()==3)
+                        {
+                            unsigned int i1 = indices[0];
+                            unsigned int i2 = indices[1];
+                            unsigned int i3 = indices[2];
+
+                            float r1 = ratios[0];
+                            float r2 = ratios[1];
+                            float r3 = ratios[2];
+
+                            osg::Array* texcoords = (geometry->getNumTexCoordArrays()>0) ? geometry->getTexCoordArray(0) : 0;
+                            osg::Vec2Array* texcoords_Vec2Array = dynamic_cast<osg::Vec2Array*>(texcoords);
+                            if (texcoords_Vec2Array)
+                            {
+                                // we have tex coord array so now we can compute
+                                //the final tex coord at the point of intersection.
+                                osg::Vec2 tc1 = (*texcoords_Vec2Array)[i1];
+                                osg::Vec2 tc2 = (*texcoords_Vec2Array)[i2];
+                                osg::Vec2 tc3 = (*texcoords_Vec2Array)[i3];
+                                tc = tc1*r1 + tc2*r2 + tc3*r3;
+                            }
+                        }
+                    }
+
+                    osg::TexMat* activeTexMat = 0;
+                    osg::Texture* activeTexture = 0;
+
+                    osg::NodePath nodePath = intersection.nodePath;
+                    unsigned int i = nodePath.size();
+                    while (i--)
+                    {
+                        osg::Node *node = nodePath[i];
+                        if(node->getStateSet())
+                        {
+                            osg::TexMat* texMat = dynamic_cast<osg::TexMat*>(node->getStateSet()->getTextureAttribute(0,osg::StateAttribute::TEXMAT));
+                            if(texMat)
+                            {
+                                activeTexMat = texMat;
+                            }
+                            osg::Texture* texture = dynamic_cast<osg::Texture*>(node->getStateSet()->getTextureAttribute(0,osg::StateAttribute::TEXTURE));
+                            if(texture)
+                            {
+                                activeTexture = texture;
+                            }
+                        }
+                    }
+
+
+                    if (activeTexMat)
+                    {
+                        osg::Vec4 tc_transformed = osg::Vec4(tc.x(), tc.y(),
+                                                             0.0f,0.0f) * activeTexMat->getMatrix();
+                        tc.x() = tc_transformed.x();
+                        tc.y() = tc_transformed.y();
+                    }
+
+                    double u = -1, v = -1;
+                    if(activeTexture)
+                    {
+                        activeTexture->setDataVariance(osg::Object::DYNAMIC);
+                        osg::Image *image = activeTexture->getImage(0);
+                        if(image)
+                        {
+                            int x_ = image->s() * tc.x();
+                            int y_ = image->t() * tc.y();
+                            unsigned char* data = image->data();
+                            if(image->getPixelFormat() == GL_RGBA || image->getPixelFormat() == GL_BGRA)
+                            {
+                                for(int n=-4; n<5; ++n)
+                                {
+                                    for(int m=-4; m<5; ++m)
+                                    {
+                                        if((n+x_ > 0 && n+x_ < image->s()) &&
+                                           (m+y_ > 0 && m+y_ < image->t()))
+                                        {
+                                            int pix = (n+x_)*4 + (m+y_)*image->s()*4;
+                                            if(data[pix+1] > 50) data[pix+1] -= 50;
+                                            if(data[pix+2] > 50) data[pix+2] -= 50;
+                                        }
+                                    }
+                                }
+                                //data[x*4 + y*image->s()*4+3] = 0;
+                            }
+                            else if(image->getPixelFormat() == GL_RGB || image->getPixelFormat() == GL_BGR)
+                            {
+                                data[x_*3 + y_*image->s()*3+0] = 250;
+                                data[x_*3 + y_*image->s()*3+1] = 0;
+                                data[x_*3 + y_*image->s()*3+2] = 0;
+                            }
+                            else
+                            {
+                                data[x_*3 + y_*image->s()*3+0] = 250;
+                                data[x_*3 + y_*image->s()*3+1] = 0;
+                                data[x_*3 + y_*image->s()*3+2] = 0;
+                            }
+                            image->dirty();
+                        }
+                    }
+                }
+                return;
+            }
         }
 
     } // end of namespace graphics

@@ -294,6 +294,7 @@ namespace mars
             virtual void edit(const std::string &key, const std::string &value) override;
             virtual void edit(unsigned long widgetID, const std::string &key,
                               const std::string &value) override;
+            virtual void brushTest(mars::utils::Vector start, mars::utils::Vector end) override;
             osg::Vec3f getSelectedPos();
             void setShadowTechnique(const std::string& s);
 
@@ -301,6 +302,7 @@ namespace mars
             virtual void produceData(const data_broker::DataInfo &info,
                                      data_broker::DataPackage *package,
                                      int callbackParam) override;
+
 
         private:
             data_broker::DataBrokerInterface *dataBroker;
