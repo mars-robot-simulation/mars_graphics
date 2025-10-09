@@ -3573,9 +3573,19 @@ namespace mars
                             }
                             else if(image->getPixelFormat() == GL_RGB || image->getPixelFormat() == GL_BGR)
                             {
-                                data[x_*3 + y_*image->s()*3+0] = 250;
-                                data[x_*3 + y_*image->s()*3+1] = 0;
-                                data[x_*3 + y_*image->s()*3+2] = 0;
+                                for(int n=-4; n<5; ++n)
+                                {
+                                    for(int m=-4; m<5; ++m)
+                                    {
+                                        if((n+x_ > 0 && n+x_ < image->s()) &&
+                                           (m+y_ > 0 && m+y_ < image->t()))
+                                        {
+                                            int pix = (n+x_)*3 + (m+y_)*image->s()*3;
+                                            if(data[pix+1] > 50) data[pix+1] -= 50;
+                                            if(data[pix+2] > 50) data[pix+2] -= 50;
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
