@@ -3553,6 +3553,8 @@ namespace mars
                         {
                             int x_ = image->s() * tc.x();
                             int y_ = image->t() * tc.y();
+                            Vector center(x_, y_, 0), pos(0, 0, 0);
+                            double d;
                             unsigned char* data = image->data();
                             if(image->getPixelFormat() == GL_RGBA || image->getPixelFormat() == GL_BGRA)
                             {
@@ -3563,9 +3565,18 @@ namespace mars
                                         if((n+x_ > 0 && n+x_ < image->s()) &&
                                            (m+y_ > 0 && m+y_ < image->t()))
                                         {
+                                            pos.x() = n+x_;
+                                            pos.y() = m+y_;
+                                            pos = center - pos;
+                                            d = pos.norm();
+                                            double w = 1.0;
+                                            w = 1.0/(d*0.5);
+                                            if(w < 0.5) w = 0;
+                                            if(w > 0.6) w = 0.6;
                                             int pix = (n+x_)*4 + (m+y_)*image->s()*4;
-                                            if(data[pix+1] > 50) data[pix+1] -= 50;
-                                            if(data[pix+2] > 50) data[pix+2] -= 50;
+
+                                            if(data[pix+1] > 50) data[pix+1] -= floor(50*w);
+                                            if(data[pix+2] > 50) data[pix+2] -= floor(50*w);
                                         }
                                     }
                                 }
