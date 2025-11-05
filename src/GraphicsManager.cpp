@@ -3381,6 +3381,7 @@ namespace mars
                 return osg::Vec3(p.x(), p.y(), p.z());
                 // TODO: multiple selections?
             }
+            return osg::Vec3(0,0,0);
         }
 
         void GraphicsManager::showFrames(bool val)
@@ -3610,6 +3611,241 @@ namespace mars
                 }
                 return;
             }
+        }
+
+        void GraphicsManager::brushTestThreaded(std::vector<Vector> start, std::vector<Vector> end)
+        {
+            while(threadPool.size() < start.size())
+            {
+                BrushThread *bThread = new BrushThread();
+                bThread->shadowedScene = shadowedScene;
+                bThread->start();
+                threadPool.push_back(bThread);
+            }
+            for(int i=0; i<start.size(); ++i)
+            {
+                threadPool[i]->setLine(start[i], end[i]);
+            }
+            for(int i=0; i<start.size(); ++i)
+            {
+                while(threadPool[i]->done == false)
+                {
+                    utils::msleep(1);
+                }
+            }
+            for(int i=0; i<start.size(); ++i)
+            {
+                for(int n=0; n<threadPool[i]->activeTextures.size(); ++n)
+                {
+                    osg::Texture* activeTexture = threadPool[i]->activeTextures[n];
+                    double x = threadPool[i]->tcs[n].x();
+                    double y = threadPool[i]->tcs[n].y();
+
+                    double u = -1, v = -1;
+                    activeTexture->setDataVariance(osg::Object::DYNAMIC);
+                    osg::Image *image = activeTexture->getImage(0);
+                    if(image)
+                    {
+                        int x_ = image->s() * x;
+                        int y_ = image->t() * y;
+                        Vector center(x_, y_, 0), pos(0, 0, 0);
+                        double d;
+                        unsigned char* data = image->data();
+                        double psize = 0;
+                        if(image->getPixelFormat() == GL_RGBA || image->getPixelFormat() == GL_BGRA)
+                        {
+                            psize = 4;
+                        }
+                        else if(image->getPixelFormat() == GL_RGB || image->getPixelFormat() == GL_BGR)
+                        {
+                            psize = 3;
+                        }
+                        if(psize > 0)
+                        {
+                            for(int n=-4; n<5; ++n)
+                            {
+                                for(int m=-4; m<5; ++m)
+                                {
+                                    if((n+x_ > 0 && n+x_ < image->s()) &&
+                                       (m+y_ > 0 && m+y_ < image->t()))
+                                    {
+                                        pos.x() = n+x_;
+                                        pos.y() = m+y_;
+                                        pos = center - pos;
+                                        d = pos.norm();
+                                        double w = 1.0;
+                                        w = 1.0/(d*0.5);
+                                        if(w < 0.5) w = 0;
+                                        if(w > 0.6) w = 0.6;
+                                        int pix = (n+x_)*psize + (m+y_)*image->s()*psize;
+
+                                        if(data[pix+1] > 50) data[pix+1] -= floor(50*w);
+                                        if(data[pix+2] > 50) data[pix+2] -= floor(50*w);
+                                    }
+                                }
+                            }
+                            //data[x*4 + y*image->s()*4+3] = 0;
+                        }
+                        image->dirty();
+                    }
+                }
+            }
+        }
+
+        BrushThread::BrushThread()
+        {
+            stop = false;
+            done = false;
+            calc = false;
+        }
+
+        void BrushThread::run()
+        {
+            while(!stop)
+            {
+                if(calc)
+                {
+                    activeTextures.clear();
+                    tcs.clear();
+                    osg::ref_ptr<osgUtil::LineSegmentIntersector> intersector = new osgUtil::LineSegmentIntersector(start_, end);
+                    osgUtil::IntersectionVisitor iv(intersector.get());
+
+                    osgUtil::LineSegmentIntersector::Intersections intersections;
+                    shadowedScene->accept(iv);
+                    if(intersector->containsIntersections())
+                    {
+                        osgUtil::LineSegmentIntersector::Intersections& intersections = intersector->getIntersections();
+                        osg::Vec2 tc(0.5f,0.5f);
+
+                        // use the nearest intersection
+                        // todo: test this
+                        //osg::Vec3 tc;
+                        //osg::Texture* activeTexture = intersection->getTextureLookUp(tc);
+                        std::vector<osgUtil::LineSegmentIntersector::Intersection> intersections2;
+                        osgUtil::LineSegmentIntersector::Intersection intersection;
+                        double minZ = 10.0;
+                        for(auto i: intersections)
+                        {
+                            osg::Vec3 v;
+                            v = i.getWorldIntersectPoint()-start_;
+                            //fprintf(stderr, "ray: %g %g %g\n\n", v.x(), v.y(), v.z());
+                            if(v.length() < minZ)
+                            {
+                                minZ = v.length();
+                                intersection = i;
+                            }
+                        }
+                        if(minZ > 1.0)
+                        {
+                            calc = false;
+                            done = true;
+                        }
+                        else
+                        {
+                            for(auto i: intersections)
+                            {
+                                osg::Vec3 v = i.getWorldIntersectPoint()-start_;
+                                if(v.length() <= minZ+0.0001)
+                                {
+                                    intersections2.push_back(i);
+                                }
+                            }
+                            for(auto intersection: intersections2)
+                            {
+                                //osgUtil::LineSegmentIntersector::Intersection intersection = intersector->getFirstIntersection();//*(intersections.begin());
+                                osg::Vec3 vi = intersection.getLocalIntersectPoint();
+                                //fprintf(stderr, "selected loca: %g %g %g\n", vi.x(), vi.y(), vi.z());
+                                vi = intersection.getWorldIntersectPoint();
+                                //fprintf(stderr, "selected world: %g %g %g\n\n", vi.x(), vi.y(), vi.z());
+                                osg::Drawable* drawable = intersection.drawable.get();
+                                osg::Geometry* geometry = drawable ? drawable->asGeometry() : 0;
+                                osg::Vec3Array* vertices = geometry ? dynamic_cast<osg::Vec3Array*>(geometry->getVertexArray()) : 0;
+                                if (vertices)
+                                {
+                                    // get the vertex indices.
+                                    const osgUtil::LineSegmentIntersector::Intersection::IndexList& indices = intersection.indexList;
+                                    const osgUtil::LineSegmentIntersector::Intersection::RatioList& ratios = intersection.ratioList;
+
+                                    if (indices.size()==3 && ratios.size()==3)
+                                    {
+                                        unsigned int i1 = indices[0];
+                                        unsigned int i2 = indices[1];
+                                        unsigned int i3 = indices[2];
+
+                                        float r1 = ratios[0];
+                                        float r2 = ratios[1];
+                                        float r3 = ratios[2];
+
+                                        osg::Array* texcoords = (geometry->getNumTexCoordArrays()>0) ? geometry->getTexCoordArray(0) : 0;
+                                        osg::Vec2Array* texcoords_Vec2Array = dynamic_cast<osg::Vec2Array*>(texcoords);
+                                        if (texcoords_Vec2Array)
+                                        {
+                                            // we have tex coord array so now we can compute
+                                            //the final tex coord at the point of intersection.
+                                            osg::Vec2 tc1 = (*texcoords_Vec2Array)[i1];
+                                            osg::Vec2 tc2 = (*texcoords_Vec2Array)[i2];
+                                            osg::Vec2 tc3 = (*texcoords_Vec2Array)[i3];
+                                            tc = tc1*r1 + tc2*r2 + tc3*r3;
+                                        }
+                                    }
+                                }
+
+                                osg::TexMat* activeTexMat = 0;
+                                osg::Texture* activeTexture = 0;
+
+                                osg::NodePath nodePath = intersection.nodePath;
+                                unsigned int i = nodePath.size();
+                                while (i--)
+                                {
+                                    osg::Node *node = nodePath[i];
+                                    if(node->getStateSet())
+                                    {
+                                        osg::TexMat* texMat = dynamic_cast<osg::TexMat*>(node->getStateSet()->getTextureAttribute(0,osg::StateAttribute::TEXMAT));
+                                        if(texMat)
+                                        {
+                                            activeTexMat = texMat;
+                                        }
+                                        osg::Texture* texture = dynamic_cast<osg::Texture*>(node->getStateSet()->getTextureAttribute(0,osg::StateAttribute::TEXTURE));
+                                        if(texture)
+                                        {
+                                            activeTexture = texture;
+                                        }
+                                    }
+                                }
+
+
+                                if (activeTexMat)
+                                {
+                                    osg::Vec4 tc_transformed = osg::Vec4(tc.x(), tc.y(),
+                                                                         0.0f,0.0f) * activeTexMat->getMatrix();
+                                    tc.x() = tc_transformed.x();
+                                    tc.y() = tc_transformed.y();
+                                }
+                                if(activeTexture)
+                                {
+                                    activeTextures.push_back(activeTexture);
+                                    tcs.push_back(Vector(tc.x(), tc.y(), 0));
+                                }
+                            }
+                        }
+                    }
+
+                    done = true;
+                    calc = false;
+                }
+                else
+                {
+                    msleep(1);
+                }
+            }
+        }
+
+        void BrushThread::setLine(Vector &start, Vector &end)
+        {
+            this->start_ = osg::Vec3(start.x(), start.y(), start.z());
+            this->end = osg::Vec3(end.x(), end.y(), end.z());
+            done = false;
+            calc = true;
         }
 
     } // end of namespace graphics

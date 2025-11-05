@@ -18,6 +18,7 @@
 
 #include <mars_interfaces/MARSDefs.h>
 #include <mars_utils/Vector.h>
+#include <mars_utils/Thread.h>
 #include <mars_utils/Quaternion.h>
 #include <mars_interfaces/core_objects_exchange.h>
 #include <mars_interfaces/GraphicData.h>
@@ -70,6 +71,25 @@ namespace mars
             osg::ref_ptr<osg::Light> light;
             mars::interfaces::LightData lStruct;
             bool free;
+        };
+
+        class BrushThread : public utils::Thread
+        {
+        public:
+            BrushThread();
+            bool done, calc;
+            bool stop;
+            osg::Vec3 start_, end;
+            std::vector<utils::Vector> tcs;
+            osg::ref_ptr<osgShadow::ShadowedScene> shadowedScene;
+            std::vector<osg::Texture*> activeTextures;
+
+            void setLine(utils::Vector &start, utils::Vector &end);
+
+        protected:
+
+            void run() override;
+
         };
 
         typedef std::map< unsigned long, osg::ref_ptr<OSGNodeStruct> > DrawObjects;
@@ -295,6 +315,7 @@ namespace mars
             virtual void edit(unsigned long widgetID, const std::string &key,
                               const std::string &value) override;
             virtual void brushTest(mars::utils::Vector start, mars::utils::Vector end) override;
+            virtual void brushTestThreaded(std::vector<utils::Vector> start_, std::vector<utils::Vector> end) override;
             osg::Vec3f getSelectedPos();
             void setShadowTechnique(const std::string& s);
 
@@ -386,6 +407,7 @@ namespace mars
 
             osg_frames::FramesFactory* framesFactory;
 
+            std::vector<BrushThread*> threadPool;
 
             /**\brief adds a preview node to the scene */
             int createPreviewNode(const std::vector<mars::interfaces::NodeData> &allNodes);
