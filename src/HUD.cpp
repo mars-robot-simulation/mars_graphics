@@ -88,6 +88,7 @@ namespace mars
 
             //hudCamera->setRenderer(new osgViewer::Renderer(hudCamera));
             hudCamera->addChild(scaleTransform.get());
+            hudCamera->setComputeNearFarMode(osg::CullSettings::COMPUTE_NEAR_FAR_USING_BOUNDING_VOLUMES);
         }
 
         osg::ref_ptr<osg::Texture2D> HUD::getTexture(void)
