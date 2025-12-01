@@ -185,6 +185,7 @@ namespace mars
             virtual void setScene(osg::Group* s)
             {
                 scene = s;
+                view->setSceneData(scene);
             }
 
             virtual void setHUDViewOffsets(double x1, double y1,
