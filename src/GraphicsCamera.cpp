@@ -7,6 +7,7 @@
 #include <osg/Texture2D>
 #include <osg/PositionAttitudeTransform>
 #include <iostream>
+#include <cassert>
 
 #define LMB osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON
 #define MMB osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON

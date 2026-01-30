@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <cstdlib>
 #include <cstdio>
+#include <cassert>
 
 #include <osg/ComputeBoundsVisitor>
 
