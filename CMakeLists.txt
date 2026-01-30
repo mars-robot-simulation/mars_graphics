@@ -1,7 +1,7 @@
+cmake_minimum_required(VERSION 3.10)
 project(mars_graphics)
 set(PROJECT_VERSION 1.0)
 set(PROJECT_DESCRIPTION "This library provides a 3d visualization through simple interfaces.")
-cmake_minimum_required(VERSION 2.6)
 
 include(FindPkgConfig)
 include(CheckIncludeFileCXX)
@@ -187,7 +187,8 @@ include_directories("${CMAKE_BINARY_DIR}")
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${QT_MOC_HEADER_SRC} config.h)
 
 if (${USE_QT5})
-qt5_use_modules(${PROJECT_NAME} Widgets OpenGL)
+find_package(Qt5 COMPONENTS Widgets OpenGL REQUIRED)
+#qt5_use_modules(${PROJECT_NAME} Widgets OpenGL)
 #qt5_use_modules(${PROJECT_NAME} MacExtras)
 endif (${USE_QT5})
 
@@ -210,6 +211,9 @@ target_link_libraries(${PROJECT_NAME}
         ${APPLE_LIBS}
         ${WIN_LIBS}
         ${EXTRA_LIBS}
+	Qt5::Widgets
+	Qt5::OpenGL
+	${OPENCV_LIBRARIES}
         pthread
 )
 
