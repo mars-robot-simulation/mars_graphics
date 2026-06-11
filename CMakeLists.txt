@@ -205,6 +205,7 @@ if(WIN32)
   endif(USE_VERTEX_BUFFER)
 endif(WIN32)
 
+if (${USE_QT5})
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         PkgConfig::Dependencies
@@ -216,6 +217,17 @@ target_link_libraries(${PROJECT_NAME}
 	${OPENCV_LIBRARIES}
         pthread
 )
+else (${USE_QT5})
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        PkgConfig::Dependencies
+        ${APPLE_LIBS}
+        ${WIN_LIBS}
+        ${EXTRA_LIBS}
+	${OPENCV_LIBRARIES}
+        pthread
+)
+endif (${USE_QT5})
 
 if(WIN32)
   set(LIB_INSTALL_DIR bin) # .dll are in PATH, like executables
